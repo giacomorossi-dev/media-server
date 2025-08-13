@@ -1,0 +1,95 @@
+:root {
+  --background-color: #222;
+  --card-background: #333;
+  --text-color: #ddd;
+  --primary-color: #683bab;
+  --primary-dark-color: #593392;
+}
+
+html {
+  font-family: "Poppins";
+  font-size: 1rem;
+  text-align: center;
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+  margin: 0;
+}
+
+h1 {
+  font-size: 3rem;
+}
+h2 {
+  font-size: 2.5rem;
+}
+h3 {
+  font-size: 2rem;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+body {
+  padding: 25px;
+  background: var(--background-color);
+  color: var(--text-color);
+}
+
+a {
+  color: var(--text-color);
+  text-decoration: none;
+}
+
+header {
+}
+
+.services {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  flex-wrap: wrap;
+  margin-top: 32px;
+}
+
+.button {
+  border-radius: 8px;
+  background-color: var(--primary-color);
+  padding: 8px 16px;
+  text-align: center;
+  text-transform: uppercase;
+  font-weight: bold;
+  transition: all 0.2s linear;
+}
+
+.button:hover {
+  transition: all 0.2s linear;
+  background-color: var(--primary-dark-color);
+}
+
+article {
+  min-width: 260px;
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+  background: var(--card-background);
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+article img {
+  max-width: 180px;
+  width: 180px;
+  display: flex;
+  align-self: center;
+}
+
+.title {
+  color: #5c6ac4;
+}
