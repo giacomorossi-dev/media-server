@@ -1,0 +1,103 @@
+name: mediaserver
+
+services:
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    container_name: mediaserver-jellyfin
+    restart: unless-stopped
+    environment:
+      - TZ=Europe/Rome
+    volumes:
+      - mediaserver-jellyfin-config:/config
+      - mediaserver-jellyfin-cache:/cache
+      - /home/mediaserver/media:/media:ro
+    networks:
+      - mediaserver-network
+      - proxy-public
+
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: mediaserver-qbittorrent
+    restart: unless-stopped
+    environment:
+      - PUID=1001
+      - PGID=1001
+      - TZ=Europe/Rome
+      - WEBUI_PORT=8080
+    ports:
+      - "6881:6881" # BitTorrent TCP
+      - "6881:6881/udp" # BitTorrent UDP
+    volumes:
+      - mediaserver-qbittorrent-config:/config
+      - /home/mediaserver/media/downloads:/downloads
+    networks:
+      - mediaserver-network
+      - proxy-public
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: mediaserver-prowlarr
+    restart: unless-stopped
+    environment:
+      - PUID=1001
+      - PGID=1001
+      - TZ=Europe/Rome
+      - DOTNET_SYSTEM_NET_DISABLEIPV6=1
+    volumes:
+      - mediaserver-prowlarr-config:/config
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    networks:
+      - mediaserver-network
+      - proxy-public
+
+  jackett:
+    image: lscr.io/linuxserver/jackett:latest
+    container_name: mediaserver-jackett
+    restart: unless-stopped
+    environment:
+      - PUID=1001
+      - PGID=1001
+      - TZ=Europe/Rome
+    volumes:
+      - mediaserver-jackett-config:/config
+      - /home/mediaserver/media/downloads:/downloads
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    networks:
+      - mediaserver-network
+      - proxy-public
+
+  dashboard:
+    image: alpine:3.20
+    restart: unless-stopped
+    # 1) installa rsync + inotify
+    # 2) copia iniziale (atomica)
+    # 3) osserva cambi e risincronizza
+    command: >
+      sh -c "
+      apk add --no-cache rsync inotify-tools >/dev/null &&
+      rsync -a --delete /src/ /target/ &&
+      inotifywait -mr -e modify,create,delete,move /src |
+        while read _; do rsync -a --delete /src/ /target/; done
+      "
+    volumes:
+      - mediaserver-dashboard:/target
+      - ./site:/src:ro
+
+volumes:
+  mediaserver-jellyfin-config:
+  mediaserver-jellyfin-cache:
+  mediaserver-qbittorrent-config:
+  mediaserver-prowlarr-config:
+  mediaserver-jackett-config:
+  mediaserver-dashboard:
+
+networks:
+  mediaserver-network:
+    name: mediaserver-network
+    driver: bridge
+  proxy-public:
+    external: true
