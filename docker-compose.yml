@@ -86,7 +86,7 @@ services:
       "
     volumes:
       - mediaserver-dashboard:/target
-      - ./site:/src:ro
+      - ./dashboard:/src:ro
 
 volumes:
   mediaserver-jellyfin-config:
