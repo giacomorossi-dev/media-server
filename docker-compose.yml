@@ -72,6 +72,7 @@ services:
 
   dashboard:
     image: alpine:3.20
+    container_name: mediaserver-dashboard
     restart: unless-stopped
     # 1) installa rsync + inotify
     # 2) copia iniziale (atomica)
@@ -89,11 +90,17 @@ services:
 
 volumes:
   mediaserver-jellyfin-config:
+    name: mediaserver-jellyfin-config
   mediaserver-jellyfin-cache:
+    name: mediaserver-jellyfin-cache
   mediaserver-qbittorrent-config:
+    name: mediaserver-qbittorrent-config
   mediaserver-prowlarr-config:
+    name: mediaserver-prowlarr-config
   mediaserver-jackett-config:
+    name: mediaserver-jackett-config
   mediaserver-dashboard:
+    name: mediaserver-dashboard
 
 networks:
   mediaserver-network:
