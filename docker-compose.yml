@@ -74,9 +74,6 @@ services:
     image: alpine:3.20
     container_name: mediaserver-dashboard
     restart: unless-stopped
-    # 1) installa rsync + inotify
-    # 2) copia iniziale (atomica)
-    # 3) osserva cambi e risincronizza
     command: >
       sh -c "
       apk add --no-cache rsync inotify-tools >/dev/null &&
@@ -87,6 +84,38 @@ services:
     volumes:
       - mediaserver-dashboard:/target
       - ./dashboard:/src:ro
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: mediaserver-radarr
+    restart: unless-stopped
+    environment:
+      - PUID=1001
+      - PGID=1001
+      - TZ=Europe/Rome
+    volumes:
+      - mediaserver-radarr-config:/config
+      - /mnt/media:/media
+      - /mnt/media/downloads:/downloads
+    networks:
+      - mediaserver-network
+      - proxy-public
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: mediaserver-sonarr
+    restart: unless-stopped
+    environment:
+      - PUID=1001
+      - PGID=1001
+      - TZ=Europe/Rome
+    volumes:
+      - mediaserver-sonarr-config:/config
+      - /mnt/media:/media
+      - /mnt/media/downloads:/downloads
+    networks:
+      - mediaserver-network
+      - proxy-public
 
 volumes:
   mediaserver-jellyfin-config:
@@ -101,6 +130,10 @@ volumes:
     name: mediaserver-jackett-config
   mediaserver-dashboard:
     name: mediaserver-dashboard
+  mediaserver-radarr-config:
+    name: mediasever-radarr-config
+  mediaserver-sonarr-config:
+    name: mediasever-sonarr-config
 
 networks:
   mediaserver-network:
