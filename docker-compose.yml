@@ -10,7 +10,7 @@ services:
     volumes:
       - mediaserver-jellyfin-config:/config
       - mediaserver-jellyfin-cache:/cache
-      - /home/mediaserver/media:/media:ro
+      - /mnt/media:/media:ro
     networks:
       - mediaserver-network
       - proxy-public
@@ -29,7 +29,7 @@ services:
       - "6881:6881/udp" # BitTorrent UDP
     volumes:
       - mediaserver-qbittorrent-config:/config
-      - /home/mediaserver/media/downloads:/downloads
+      - /mnt/media/downloads:/downloads
     networks:
       - mediaserver-network
       - proxy-public
@@ -62,7 +62,7 @@ services:
       - TZ=Europe/Rome
     volumes:
       - mediaserver-jackett-config:/config
-      - /home/mediaserver/media/downloads:/downloads
+      - /mnt/media/downloads:/downloads
     dns:
       - 1.1.1.1
       - 8.8.8.8
