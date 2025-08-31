@@ -131,9 +131,9 @@ volumes:
   mediaserver-dashboard:
     name: mediaserver-dashboard
   mediaserver-radarr-config:
-    name: mediasever-radarr-config
+    name: mediaserver-radarr-config
   mediaserver-sonarr-config:
-    name: mediasever-sonarr-config
+    name: mediaserver-sonarr-config
 
 networks:
   mediaserver-network:
