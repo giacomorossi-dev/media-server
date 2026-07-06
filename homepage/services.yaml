@@ -1,0 +1,68 @@
+- Streaming:
+    - Jellyfin:
+        icon: jellyfin.png
+        href: http://{{HOMEPAGE_VAR_SERVER_IP}}:8096
+        description: Film e serie TV
+        server: my-docker
+        container: mediaserver-jellyfin
+        widget:
+          type: jellyfin
+          url: http://mediaserver-jellyfin:8096
+          key: "{{HOMEPAGE_VAR_JELLYFIN_KEY}}"
+          enableBlocks: true
+          enableNowPlaying: true
+
+- Gestione:
+    - Radarr:
+        icon: radarr.png
+        href: http://{{HOMEPAGE_VAR_SERVER_IP}}:7878
+        description: Film
+        server: my-docker
+        container: mediaserver-radarr
+        widget:
+          type: radarr
+          url: http://mediaserver-radarr:7878
+          key: "{{HOMEPAGE_VAR_RADARR_KEY}}"
+    - Sonarr:
+        icon: sonarr.png
+        href: http://{{HOMEPAGE_VAR_SERVER_IP}}:8989
+        description: Serie TV
+        server: my-docker
+        container: mediaserver-sonarr
+        widget:
+          type: sonarr
+          url: http://mediaserver-sonarr:8989
+          key: "{{HOMEPAGE_VAR_SONARR_KEY}}"
+    - Prowlarr:
+        icon: prowlarr.png
+        href: http://{{HOMEPAGE_VAR_SERVER_IP}}:9696
+        description: Indexer
+        server: my-docker
+        container: mediaserver-prowlarr
+        widget:
+          type: prowlarr
+          url: http://mediaserver-prowlarr:9696
+          key: "{{HOMEPAGE_VAR_PROWLARR_KEY}}"
+    - Bazarr:
+        icon: bazarr.png
+        href: http://{{HOMEPAGE_VAR_SERVER_IP}}:6767
+        description: Sottotitoli
+        server: my-docker
+        container: mediaserver-bazarr
+        widget:
+          type: bazarr
+          url: http://mediaserver-bazarr:6767
+          key: "{{HOMEPAGE_VAR_BAZARR_KEY}}"
+
+- Download:
+    - qBittorrent:
+        icon: qbittorrent.png
+        href: http://{{HOMEPAGE_VAR_SERVER_IP}}:8080
+        description: Client torrent
+        server: my-docker
+        container: mediaserver-qbittorrent
+        widget:
+          type: qbittorrent
+          url: http://mediaserver-qbittorrent:8080
+          username: "{{HOMEPAGE_VAR_QBIT_USER}}"
+          password: "{{HOMEPAGE_VAR_QBIT_PASS}}"

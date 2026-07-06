@@ -1,0 +1,14 @@
+title: Media Server
+theme: dark
+color: slate
+headerStyle: clean
+layout:
+  Streaming:
+    style: row
+    columns: 1
+  Gestione:
+    style: row
+    columns: 4
+  Download:
+    style: row
+    columns: 1

@@ -1,0 +1,4 @@
+# Integrazione Docker: mostra stato/risorse dei container nelle card dei servizi.
+# Il socket è montato in sola lettura nel docker-compose.yml.
+my-docker:
+  socket: /var/run/docker.sock

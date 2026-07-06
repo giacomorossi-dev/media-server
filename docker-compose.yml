@@ -1,48 +1,80 @@
 name: mediaserver
 
+# ---------------------------------------------------------------------------
+# Media Server v2 — locale, acceso a domanda (accendo → scarico → guardo → spengo)
+#
+# Novità rispetto alla v1:
+#  - Struttura a ROOT UNICA (/data) -> import via hardlink invece di copie lente
+#  - Rimosso Jackett (ridondante con Prowlarr) e la dashboard statica
+#  - Aggiunti Bazarr (sottotitoli) e Homepage (dashboard live)
+#  - Rimossa la rete esterna proxy-public: accesso diretto via porte sulla LAN
+#  - Versioni pinnate (niente :latest), config via .env
+#
+# I valori (IP, path, API key) stanno in .env — vedi README.md
+# ---------------------------------------------------------------------------
+
+x-common-env: &common-env
+  PUID: ${PUID:-1001}
+  PGID: ${PGID:-1001}
+  TZ: ${TZ:-Europe/Rome}
+
 services:
   jellyfin:
-    image: jellyfin/jellyfin:latest
+    image: jellyfin/jellyfin:10.11.11
     container_name: mediaserver-jellyfin
     restart: unless-stopped
     environment:
-      - TZ=Europe/Rome
+      TZ: ${TZ:-Europe/Rome}
+    ports:
+      - "8096:8096"
     volumes:
       - mediaserver-jellyfin-config:/config
       - mediaserver-jellyfin-cache:/cache
-      - /mnt/media:/media:ro
+      - ${MEDIA_ROOT}/media:/data/media:ro   # legge solo la libreria, in sola lettura
+    # --- Transcoding hardware (Intel QuickSync / VAAPI) --------------------
+    # Da ABILITARE dopo aver verificato la iGPU del mini PC reale:
+    #   ls /dev/dri            -> deve esistere renderD128
+    #   getent group render    -> annota il GID e mettilo in RENDER_GID (.env)
+    # devices:
+    #   - /dev/dri:/dev/dri
+    # group_add:
+    #   - "${RENDER_GID}"
+    # ----------------------------------------------------------------------
     networks:
       - mediaserver-network
-      - proxy-public
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8096/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
 
   qbittorrent:
-    image: lscr.io/linuxserver/qbittorrent:latest
+    image: lscr.io/linuxserver/qbittorrent:5.2.2
     container_name: mediaserver-qbittorrent
     restart: unless-stopped
     environment:
-      - PUID=1001
-      - PGID=1001
-      - TZ=Europe/Rome
-      - WEBUI_PORT=8080
+      <<: *common-env
+      WEBUI_PORT: 8080
     ports:
-      - "6881:6881" # BitTorrent TCP
-      - "6881:6881/udp" # BitTorrent UDP
+      - "8080:8080"        # WebUI
+      - "6881:6881"        # BitTorrent TCP
+      - "6881:6881/udp"    # BitTorrent UDP
     volumes:
       - mediaserver-qbittorrent-config:/config
-      - /mnt/media/downloads:/downloads
+      - ${MEDIA_ROOT}:/data   # root unica: qBittorrent scarica in /data/torrents
     networks:
       - mediaserver-network
-      - proxy-public
 
   prowlarr:
-    image: lscr.io/linuxserver/prowlarr:latest
+    image: lscr.io/linuxserver/prowlarr:2.5.1-nightly
     container_name: mediaserver-prowlarr
     restart: unless-stopped
     environment:
-      - PUID=1001
-      - PGID=1001
-      - TZ=Europe/Rome
-      - DOTNET_SYSTEM_NET_DISABLEIPV6=1
+      <<: *common-env
+      DOTNET_SYSTEM_NET_DISABLEIPV6: 1
+    ports:
+      - "9696:9696"
     volumes:
       - mediaserver-prowlarr-config:/config
     dns:
@@ -50,72 +82,75 @@ services:
       - 8.8.8.8
     networks:
       - mediaserver-network
-      - proxy-public
-
-  jackett:
-    image: lscr.io/linuxserver/jackett:latest
-    container_name: mediaserver-jackett
-    restart: unless-stopped
-    environment:
-      - PUID=1001
-      - PGID=1001
-      - TZ=Europe/Rome
-    volumes:
-      - mediaserver-jackett-config:/config
-      - /mnt/media/downloads:/downloads
-    dns:
-      - 1.1.1.1
-      - 8.8.8.8
-    networks:
-      - mediaserver-network
-      - proxy-public
-
-  dashboard:
-    image: alpine:3.20
-    container_name: mediaserver-dashboard
-    restart: unless-stopped
-    command: >
-      sh -c "
-      apk add --no-cache rsync inotify-tools >/dev/null &&
-      rsync -a --delete /src/ /target/ &&
-      inotifywait -mr -e modify,create,delete,move /src |
-        while read _; do rsync -a --delete /src/ /target/; done
-      "
-    volumes:
-      - mediaserver-dashboard:/target
-      - ./dashboard:/src:ro
 
   radarr:
-    image: lscr.io/linuxserver/radarr:latest
+    image: lscr.io/linuxserver/radarr:6.2.1
     container_name: mediaserver-radarr
     restart: unless-stopped
     environment:
-      - PUID=1001
-      - PGID=1001
-      - TZ=Europe/Rome
+      <<: *common-env
+    ports:
+      - "7878:7878"
     volumes:
       - mediaserver-radarr-config:/config
-      - /mnt/media:/media
-      - /mnt/media/downloads:/downloads
+      - ${MEDIA_ROOT}:/data   # stessa root di qBittorrent -> hardlink
     networks:
       - mediaserver-network
-      - proxy-public
 
   sonarr:
-    image: lscr.io/linuxserver/sonarr:latest
+    image: lscr.io/linuxserver/sonarr:4.0.19
     container_name: mediaserver-sonarr
     restart: unless-stopped
     environment:
-      - PUID=1001
-      - PGID=1001
-      - TZ=Europe/Rome
+      <<: *common-env
+    ports:
+      - "8989:8989"
     volumes:
       - mediaserver-sonarr-config:/config
-      - /mnt/media:/media
-      - /mnt/media/downloads:/downloads
+      - ${MEDIA_ROOT}:/data
     networks:
       - mediaserver-network
-      - proxy-public
+
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:1.6.0
+    container_name: mediaserver-bazarr
+    restart: unless-stopped
+    environment:
+      <<: *common-env
+    ports:
+      - "6767:6767"
+    volumes:
+      - mediaserver-bazarr-config:/config
+      - ${MEDIA_ROOT}:/data
+    networks:
+      - mediaserver-network
+
+  homepage:
+    image: ghcr.io/gethomepage/homepage:v1.13.2
+    container_name: mediaserver-homepage
+    restart: unless-stopped
+    environment:
+      PUID: ${PUID:-1001}
+      PGID: ${PGID:-1001}
+      # Obbligatorio in Homepage v1.x: host da cui è ammesso l'accesso
+      HOMEPAGE_ALLOWED_HOSTS: ${HOMEPAGE_ALLOWED_HOSTS}
+      # Variabili usate nelle config (services.yaml / widgets.yaml)
+      HOMEPAGE_VAR_SERVER_IP: ${SERVER_IP}
+      HOMEPAGE_VAR_JELLYFIN_KEY: ${JELLYFIN_API_KEY:-}
+      HOMEPAGE_VAR_RADARR_KEY: ${RADARR_API_KEY:-}
+      HOMEPAGE_VAR_SONARR_KEY: ${SONARR_API_KEY:-}
+      HOMEPAGE_VAR_PROWLARR_KEY: ${PROWLARR_API_KEY:-}
+      HOMEPAGE_VAR_BAZARR_KEY: ${BAZARR_API_KEY:-}
+      HOMEPAGE_VAR_QBIT_USER: ${QBIT_USER:-admin}
+      HOMEPAGE_VAR_QBIT_PASS: ${QBIT_PASS:-}
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./homepage:/app/config
+      - ${MEDIA_ROOT}:/data:ro                       # per il widget "spazio disco"
+      - /var/run/docker.sock:/var/run/docker.sock:ro # per lo stato dei container
+    networks:
+      - mediaserver-network
 
 volumes:
   mediaserver-jellyfin-config:
@@ -126,18 +161,14 @@ volumes:
     name: mediaserver-qbittorrent-config
   mediaserver-prowlarr-config:
     name: mediaserver-prowlarr-config
-  mediaserver-jackett-config:
-    name: mediaserver-jackett-config
-  mediaserver-dashboard:
-    name: mediaserver-dashboard
   mediaserver-radarr-config:
     name: mediaserver-radarr-config
   mediaserver-sonarr-config:
     name: mediaserver-sonarr-config
+  mediaserver-bazarr-config:
+    name: mediaserver-bazarr-config
 
 networks:
   mediaserver-network:
     name: mediaserver-network
     driver: bridge
-  proxy-public:
-    external: true

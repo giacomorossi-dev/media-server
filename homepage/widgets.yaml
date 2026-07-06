@@ -1,0 +1,15 @@
+- resources:
+    label: Sistema
+    cpu: true
+    memory: true
+    disk: /data        # spazio su MEDIA_ROOT (montato ro nel container homepage)
+
+- datetime:
+    text_size: xl
+    format:
+      timeStyle: short
+      dateStyle: long
+
+- search:
+    provider: duckduckgo
+    target: _blank

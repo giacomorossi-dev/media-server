@@ -1,0 +1,5 @@
+# Segreti e configurazione locale
+.env
+
+# File di sistema
+.DS_Store
