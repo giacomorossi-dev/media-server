@@ -51,12 +51,16 @@ che rompe gli hardlink e forza le copie.
    ```bash
    cp .env.example .env
    # modifica .env: SERVER_IP, HOMEPAGE_ALLOWED_HOSTS, MEDIA_ROOT
+   # ricava i GID del server e mettili in .env:
+   getent group docker    # -> DOCKER_GID
+   getent group render    # -> RENDER_GID (solo se vuoi il transcoding HW)
    ```
 
 2. **Prepara le cartelle** (vedi anche "Migrazione dalla v1" sotto)
    ```bash
    mkdir -p /mnt/media/torrents/{movies,tv} /mnt/media/media/{movies,tv}
    chown -R 1001:1001 /mnt/media
+   chown -R 1001:1001 homepage    # Homepage gira come 1001 e scrive i suoi log qui
    ```
 
 3. **Avvia**
@@ -137,6 +141,17 @@ Così, appena scaricato, esci in fretta dalla condivisione.
 Se un giorno vuoi cifrare il traffico torrent, lo standard è **Gluetun**: si aggiunge
 un container VPN e si mette qBittorrent in `network_mode: service:gluetun` (con
 kill-switch integrato). Nessuna riristrutturazione del resto dello stack.
+
+## Uso quotidiano (macchina on-demand)
+
+La configurazione si fa **una volta sola**. Dopo, grazie a `restart: unless-stopped`:
+
+- **Accendi il mini PC** → il demone Docker riparte e i container si riavviano da soli.
+  **Non serve rilanciare `docker compose`**: apri il browser e usi i servizi.
+- **Spegni** normalmente il mini PC quando hai finito.
+
+Rilanci `docker compose up -d` **solo** quando cambi la configurazione (`.env`,
+`docker-compose.yml`, file di `homepage/`) o aggiorni le versioni delle immagini.
 
 ## Comandi utili
 

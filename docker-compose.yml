@@ -42,12 +42,6 @@ services:
     # ----------------------------------------------------------------------
     networks:
       - mediaserver-network
-    healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:8096/health || exit 1"]
-      interval: 30s
-      timeout: 5s
-      retries: 5
-      start_period: 40s
 
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:5.2.2
@@ -143,6 +137,10 @@ services:
       HOMEPAGE_VAR_BAZARR_KEY: ${BAZARR_API_KEY:-}
       HOMEPAGE_VAR_QBIT_USER: ${QBIT_USER:-admin}
       HOMEPAGE_VAR_QBIT_PASS: ${QBIT_PASS:-}
+    # Accesso al socket Docker per i widget di stato container.
+    # Metti in DOCKER_GID (.env) il GID del gruppo docker:  getent group docker
+    group_add:
+      - "${DOCKER_GID:-999}"
     ports:
       - "3000:3000"
     volumes:
