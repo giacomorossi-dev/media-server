@@ -390,9 +390,14 @@ sudo curl -fsSL https://download.docker.com/linux/debian/gpg \
   -o /etc/apt/keyrings/docker.asc
 sudo chmod a+r /etc/apt/keyrings/docker.asc
 
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] \
-https://download.docker.com/linux/debian $(. /etc/os-release &amp;&amp; echo "$VERSION_CODENAME") stable" \
-| sudo tee /etc/apt/sources.list.d/docker.list &gt; /dev/null</pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
+sudo tee /etc/apt/sources.list.d/docker.sources &gt;/dev/null &lt;&lt;EOF
+Types: deb
+URIs: https://download.docker.com/linux/debian
+Suites: $(. /etc/os-release &amp;&amp; echo "$VERSION_CODENAME")
+Components: stable
+Architectures: $(dpkg --print-architecture)
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF</pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
       <li class="step"><div class="step-row"><input type="checkbox" id="s10-2"><label class="step-label" for="s10-2">Installa Engine + plugin Compose</label>
         <div class="step-body"><div class="cmd"><pre>sudo apt update
 sudo apt install -y docker-ce docker-ce-cli containerd.io \
