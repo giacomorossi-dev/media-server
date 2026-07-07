@@ -515,12 +515,8 @@ id -g    <span class="c"># -&gt; PGID</span></pre><button class="copy-btn" type=
           </ul>
           <p>Salva con <kbd>Ctrl+O</kbd> → <kbd>Invio</kbd> → <kbd>Ctrl+X</kbd>.</p>
         </div></div></li>
-      <li class="step"><div class="step-row"><input type="checkbox" id="s13-4"><label class="step-label" for="s13-4">Attiva il transcoding nel compose</label>
-        <div class="step-body"><p><code class="inline">nano docker-compose.yml</code>, blocco <b>jellyfin</b>, togli il <code class="inline">#</code> da:</p>
-          <div class="cmd"><pre>    devices:
-      - /dev/dri:/dev/dri
-    group_add:
-      - "${RENDER_GID}"</pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s13-4"><label class="step-label" for="s13-4">Transcoding VAAPI: già attivo (verifica solo <code class="inline">RENDER_GID</code>)</label>
+        <div class="step-body"><p>Non devi più modificare il compose: il transcoding è <b>attivo di default</b>. Basta che <code class="inline">RENDER_GID</code> sia impostato nel <code class="inline">.env</code> (passo precedente) — altrimenti <code class="inline">docker compose</code> si ferma con un messaggio chiaro. Su hardware senza iGPU, commenta il blocco <code class="inline">devices:</code>/<code class="inline">group_add:</code> del servizio jellyfin.</p></div></div></li>
       <li class="step"><div class="step-row"><input type="checkbox" id="s13-6"><label class="step-label" for="s13-6">Robustezza mount USB (se il disco va in standby)</label>
         <div class="step-body"><p>I box USB mettono l'HDD in standby: così Docker parte <b>solo dopo</b> il mount di <code class="inline">/mnt/media</code> e non scrive mai sull'SSD.</p>
           <div class="cmd"><pre>sudo mkdir -p /etc/systemd/system/docker.service.d

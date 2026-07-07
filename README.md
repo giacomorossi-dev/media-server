@@ -136,10 +136,10 @@ ls /dev/dri            # deve esserci renderD128
 getent group render    # annota il GID
 ```
 
-Se presente: metti il GID in `RENDER_GID` (`.env`) e **decommenta** le righe
-`devices:` e `group_add:` nel blocco `jellyfin` del `docker-compose.yml`, poi in
-Jellyfin abilita *Dashboard → Playback → Hardware acceleration* = **VAAPI**, device
-`/dev/dri/renderD128` (non «Quick Sync», che è solo Intel).
+Il transcoding è **già attivo** nel `docker-compose.yml`: basta impostare `RENDER_GID`
+nel `.env`. Poi in Jellyfin abilita *Dashboard → Playback → Hardware acceleration* =
+**VAAPI**, device `/dev/dri/renderD128` (non «Quick Sync», che è solo Intel). Su hardware
+senza iGPU, commenta il blocco `devices:`/`group_add:` del servizio `jellyfin`.
 
 ## qBittorrent: limitare il seeding (niente VPN)
 

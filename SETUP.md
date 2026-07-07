@@ -352,8 +352,9 @@ Con `nano .env` imposta (le cartelle e la robustezza del mount le hai già fatte
 - `RENDER_GID` / `DOCKER_GID` = i GID (§6/VAAPI: `getent group render` / `getent group docker`)
 - `MEDIA_ROOT=/mnt/media` è già impostato
 
-Attiva il **transcoding**: in `docker-compose.yml`, blocco `jellyfin`, togli il `#` da
-`devices:` / `- /dev/dri:/dev/dri` / `group_add:` / `- "${RENDER_GID}"`.
+Il **transcoding VAAPI è già attivo** nel `docker-compose.yml` (richiede `/dev/dri` +
+`RENDER_GID` nel `.env`). Su hardware senza iGPU passthrough, commenta il blocco
+`devices:`/`group_add:` del servizio `jellyfin`.
 
 Poi verifica e avvia:
 

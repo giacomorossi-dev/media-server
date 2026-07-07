@@ -31,18 +31,14 @@ services:
       - mediaserver-jellyfin-config:/config
       - mediaserver-jellyfin-cache:/cache
       - ${MEDIA_ROOT}/media:/data/media:ro   # legge solo la libreria, in sola lettura
-    # --- Transcoding hardware (AMD Radeon 660M — VAAPI) -------------------
-    # Server: Beelink EQR6 (Ryzen 5 6600H, iGPU RDNA2). Usa VAAPI, non QuickSync.
-    # Verifica sul mini PC e poi decommenta:
-    #   ls /dev/dri            -> deve esistere renderD128
-    #   getent group render    -> metti il GID in RENDER_GID (.env)
-    # In Jellyfin: Dashboard > Playback > Hardware acceleration = VAAPI,
-    #   device /dev/dri/renderD128  (QuickSync è solo Intel: NON usarlo)
-    # devices:
-    #   - /dev/dri:/dev/dri
-    # group_add:
-    #   - "${RENDER_GID}"
-    # ----------------------------------------------------------------------
+    # Transcoding hardware VAAPI (Beelink EQR6 — AMD Radeon 660M, RDNA2).
+    # Richiede /dev/dri sull'host e RENDER_GID nel .env (getent group render).
+    # In Jellyfin: Dashboard > Playback > Hardware acceleration = VAAPI.
+    # Su hardware SENZA iGPU passthrough, commenta le 4 righe qui sotto.
+    devices:
+      - /dev/dri:/dev/dri
+    group_add:
+      - "${RENDER_GID:?imposta RENDER_GID nel .env — vedi: getent group render}"
     networks:
       - mediaserver-network
 
