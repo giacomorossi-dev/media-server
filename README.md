@@ -163,14 +163,18 @@ La configurazione si fa **una volta sola**. Dopo, grazie a `restart: unless-stop
   **Non serve rilanciare `docker compose`**: apri il browser e usi i servizi.
 - **Spegni** normalmente il mini PC quando hai finito.
 
+Puoi anche accendere/spegnere **dal telefono** (Wake-on-LAN + SSH): vedi [SETUP.md](./SETUP.md) §11.
+
 Rilanci `docker compose up -d` **solo** quando cambi la configurazione (`.env`,
 `docker-compose.yml`, file di `homepage/`) o aggiorni le versioni delle immagini.
 
 ## Backup
 
-Le configurazioni delle app (volumi `*-config`) vanno salvate **cifrate su cloud** con
-`scripts/backup-config.sh` (restic → Cloudflare R2 o Google Drive). Procedura completa:
-**[BACKUP.md](./BACKUP.md)**.
+Le configurazioni delle app (volumi `*-config`) vengono salvate **cifrate su cloud** con
+`scripts/backup-config.sh` (restic → Cloudflare R2 o Google Drive). Il backup parte
+**automaticamente a ogni accensione** (con guardia anti-doppioni) e il suo esito è visibile
+nella card **Backup** di Homepage (lista completa su `http://IP:8082`). I **media non**
+vengono salvati (usa-e-getta). Procedura completa: **[BACKUP.md](./BACKUP.md)**.
 
 ## Comandi utili
 

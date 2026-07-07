@@ -213,6 +213,10 @@ sudo chown -R $USER:$USER /mnt/media
 > sempre collegato** al mini PC: se non è montato all'avvio, i container scriverebbero
 > nella cartella vuota sull'SSD invece che sul disco.
 
+> (Opzionale) Preavviso guasti disco: `sudo apt install -y smartmontools` poi
+> `sudo smartctl -H /dev/sdX` per un check rapido della salute (i media non li salviamo,
+> ma sapere che il disco sta morendo è comodo).
+
 ## 8. Deploy dello stack v2
 
 ```bash
@@ -268,6 +272,60 @@ sudo ./scripts/backup-config.sh
 
 📖 **Procedura completa e dettagliata** (creazione bucket R2, token, automazione con timer
 systemd, ripristino e test): vedi **[BACKUP.md](./BACKUP.md)**.
+
+## 11. Accensione da telefono (Wake-on-LAN) e sicurezza di rete
+
+### Accendere e spegnere da telefono
+
+**Accensione — Wake-on-LAN:**
+
+1. Nel BIOS del Beelink abilita **Power On by PCI-E / Wake-on-LAN** (e disabilita
+   "ErP/Deep Sleep" se presente, altrimenti blocca il WoL). Usa la **rete via cavo**: il
+   WoL su Wi-Fi è inaffidabile.
+2. Rendi persistente il WoL sulla scheda di rete:
+
+   ```bash
+   sudo apt install -y ethtool
+   IFACE=$(ip -o -4 route show default | awk '{print $5}')
+   sudo tee /etc/systemd/system/wol.service >/dev/null <<EOF
+   [Unit]
+   Description=Abilita Wake-on-LAN su $IFACE
+   After=network-online.target
+
+   [Service]
+   Type=oneshot
+   ExecStart=/usr/sbin/ethtool -s $IFACE wol g
+
+   [Install]
+   WantedBy=multi-user.target
+   EOF
+   sudo systemctl enable --now wol.service
+   ```
+3. Dal telefono usa un'app **"Wake on LAN"**: invia il *magic packet* al **MAC** del
+   server (lo trovi con `ip link`) sulla LAN.
+
+**Spegnimento — via SSH:** consenti lo spegnimento senza password e lancialo da un'app SSH
+(Termius/JuiceSSH, con chiave):
+
+```bash
+echo "$USER ALL=(root) NOPASSWD: /usr/bin/systemctl poweroff" | sudo tee /etc/sudoers.d/poweroff
+sudo chmod 0440 /etc/sudoers.d/poweroff
+```
+
+Sul telefono salvi il comando `sudo systemctl poweroff`.
+
+> Flusso tipico: accendo col magic packet → dopo ~5 min parte il backup → guardo →
+> `sudo systemctl poweroff` dal telefono.
+
+### Sicurezza di rete (solo-LAN)
+
+I servizi **non hanno login**: la sicurezza si regge sul fatto che sono raggiungibili solo
+dalla rete di casa. Quindi:
+
+- Sul router **disattiva UPnP** e verifica che **non ci sia alcun port-forward** verso il
+  mini PC: è ciò che impedisce l'esposizione accidentale su internet.
+- `ufw` (§4.2) limita già SSH alla LAN; le porte dei servizi restano volutamente aperte in
+  LAN. Un layer di autenticazione servirà **solo** il giorno che esponi il server da fuori.
 
 ---
 

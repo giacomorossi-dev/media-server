@@ -20,11 +20,11 @@ x-common-env: &common-env
 
 services:
   jellyfin:
-    image: jellyfin/jellyfin:10.11.11
+    image: lscr.io/linuxserver/jellyfin:10.11.11
     container_name: mediaserver-jellyfin
     restart: unless-stopped
     environment:
-      TZ: ${TZ:-Europe/Rome}
+      <<: *common-env   # PUID/PGID/TZ: l'immagine LSIO gira non-root
     ports:
       - "8096:8096"
     volumes:
@@ -64,7 +64,7 @@ services:
       - mediaserver-network
 
   prowlarr:
-    image: lscr.io/linuxserver/prowlarr:2.5.1-nightly
+    image: lscr.io/linuxserver/prowlarr:nightly-version-2.5.1.5460
     container_name: mediaserver-prowlarr
     restart: unless-stopped
     environment:
@@ -150,6 +150,18 @@ services:
       - ./homepage:/app/config
       - ${MEDIA_ROOT}:/data:ro                       # per il widget "spazio disco"
       - /var/run/docker.sock:/var/run/docker.sock:ro # per lo stato dei container
+    networks:
+      - mediaserver-network
+
+  # Espone lo stato dei backup (scritto da scripts/backup-config.sh) a Homepage.
+  backup-status:
+    image: nginx:1.31.2-alpine
+    container_name: mediaserver-backup-status
+    restart: unless-stopped
+    ports:
+      - "8082:80"
+    volumes:
+      - /var/lib/mediaserver-backup-status:/usr/share/nginx/html:ro
     networks:
       - mediaserver-network
 

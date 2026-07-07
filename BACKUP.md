@@ -86,15 +86,18 @@ restic stats              # spazio occupato nel repository
 restic check              # verifica l'integrità del repository
 ```
 
-## 6. Automatizzare (timer systemd, adatto all'on-demand)
+## 6. Automatizzare — backup all'accensione
 
-Un timer con `Persistent=true` esegue il backup **al primo avvio utile** se la macchina
-era spenta all'orario previsto — perfetto per un server acceso a intermittenza.
+Su una macchina on-demand il backup parte **a ogni accensione** (5 minuti dopo il boot).
+Lo script ha una **guardia interna**: se l'ultimo backup riuscito è più recente di ~20h,
+salta — così accensioni multiple nello stesso giorno non generano doppioni.
 
 ```bash
 sudo tee /etc/systemd/system/mediaserver-backup.service >/dev/null <<EOF
 [Unit]
 Description=Backup config media server (restic)
+After=network-online.target docker.service
+Wants=network-online.target
 
 [Service]
 Type=oneshot
@@ -103,11 +106,10 @@ EOF
 
 sudo tee /etc/systemd/system/mediaserver-backup.timer >/dev/null <<'EOF'
 [Unit]
-Description=Backup giornaliero config media server
+Description=Backup config all'accensione
 
 [Timer]
-OnCalendar=daily
-Persistent=true
+OnBootSec=5min
 
 [Install]
 WantedBy=timers.target
@@ -117,11 +119,12 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now mediaserver-backup.timer
 ```
 
-Controlli:
+Controlli e backup manuale (bypassa la guardia con `--force`):
 
 ```bash
 systemctl list-timers | grep mediaserver-backup     # prossima esecuzione
 journalctl -u mediaserver-backup.service            # log dell'ultimo backup
+sudo ./scripts/backup-config.sh --force             # forza subito un backup
 ```
 
 ## 7. Alternativa: Google Drive (via rclone)
@@ -174,11 +177,18 @@ ls -R /tmp/restore-test | head        # controlla che i file ci siano
 sudo rm -rf /tmp/restore-test
 ```
 
-## 10. Homepage
+## 10. Stato in Homepage
 
-Nella dashboard c'è la card **Backup** che apre la console R2 di Cloudflare per controllare
-il bucket. Lo stato dei backup si verifica da CLI con `restic snapshots` (un job pianificato
-non ha una pagina web da mostrare in un widget).
+Lo script scrive lo stato in `/var/lib/mediaserver-backup-status/`:
+- `status.json` — ultimo backup (data, esito OK/FAIL, snapshot, dimensione);
+- `index.html` — tabella dello storico dei run.
+
+Il container `backup-status` (nginx, nel `docker-compose.yml`) serve quella cartella. Nella
+dashboard la card **Backup** del gruppo *Sistema*:
+- mostra via widget l'**ultima data e l'esito** (OK/FAIL);
+- cliccandola apre `http://<IP>:8082` con la **lista completa** dei backup.
+
+Si popola da sola dopo il primo backup — nessuna configurazione extra.
 
 ## Troubleshooting
 

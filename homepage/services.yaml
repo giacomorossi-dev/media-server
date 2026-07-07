@@ -68,8 +68,19 @@
           password: "{{HOMEPAGE_VAR_QBIT_PASS}}"
 
 - Sistema:
-    - Backup (Cloudflare R2):
+    - Backup:
         icon: mdi-cloud-upload
-        href: https://dash.cloudflare.com/?to=/:account/r2
-        description: Backup cifrato dei config · stato via "restic snapshots"
+        href: http://{{HOMEPAGE_VAR_SERVER_IP}}:8082
+        description: Storico backup config (clic = lista completa)
         target: _blank
+        widget:
+          type: customapi
+          url: http://mediaserver-backup-status/status.json
+          refreshInterval: 60000
+          mappings:
+            - field: last_run
+              label: Ultimo
+            - field: result
+              label: Esito
+            - field: size
+              label: Dim.
