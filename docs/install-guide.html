@@ -381,8 +381,15 @@ bantime  = 1h
 EOF
 sudo systemctl enable --now fail2ban</pre><button class="copy-btn" type="button">Copia</button></div>
           <div class="note info"><p><span class="tag">Onestamente</span></p><p>Con l'accesso a sola chiave il brute-force è già impossibile: Fail2ban qui è «cintura + bretelle».</p></div></div></div></li>
-      <li class="step"><div class="step-row"><input type="checkbox" id="s8-3"><label class="step-label" for="s8-3">Sul router: disattiva UPnP e verifica zero port-forward</label>
-        <div class="step-body"><p>È ciò che impedisce l'esposizione accidentale su internet. I servizi non hanno login: restano al sicuro finché sono raggiungibili <b>solo dalla LAN</b>.</p></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s8-3"><label class="step-label" for="s8-3">Sul router: UPnP off, niente port-forward, niente DMZ</label>
+        <div class="step-body"><p>I servizi non hanno login: restano al sicuro finché raggiungibili <b>solo dalla LAN</b>. Nel router:</p>
+          <ul>
+            <li><b>UPnP</b> (in Advanced/NAT/Firewall) → <b>disattiva</b>: evita che app/dispositivi aprano porte verso internet da soli.</li>
+            <li><b>Port Forwarding</b> (Virtual Servers / Inoltro porte) → nessuna regola verso il mini PC o le sue porte.</li>
+            <li><b>DMZ</b> → disabilitata. Se <b>non trovi la voce</b>, non è attiva (va abilitata di proposito) → ok.</li>
+          </ul>
+          <p>Controprova opzionale: dal telefono in <b>rete mobile</b> apri <code class="inline">http://TUO_IP_PUBBLICO:8096</code> → non deve rispondere.</p>
+        </div></div></li>
     </ol>
   </section>
 
@@ -625,7 +632,7 @@ sudo chmod 0440 /etc/sudoers.d/poweroff</pre><button class="copy-btn" type="butt
         <div class="step-body"><div class="cmd"><pre>journalctl -u mediaserver-backup.service   <span class="c"># log del backup post-boot</span></pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
     </ol>
 
-    <div class="note info" style="margin-top:1.4rem"><p><span class="tag">Uso quotidiano</span></p><p>Finito. Accendi (anche da telefono) → i container ripartono da soli e il backup gira → guardi → spegni. Rilanci <code class="inline">docker compose up -d</code> solo dopo aver cambiato configurazione o versioni.</p></div>
+    <div class="note info" style="margin-top:1.4rem"><p><span class="tag">Uso quotidiano</span></p><p>Finito. Accendi (anche da telefono) → i container ripartono da soli e il backup gira → guardi → spegni con <code class="inline">sudo systemctl poweroff</code> (arresto pulito: i container si fermano bene). Rilanci <code class="inline">docker compose up -d</code> solo dopo aver cambiato configurazione o versioni.</p></div>
   </section>
 
 </main>

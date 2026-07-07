@@ -415,13 +415,20 @@ Sul telefono salvi il comando `sudo systemctl poweroff`.
 I servizi **non hanno login**: la sicurezza si regge sul fatto che sono raggiungibili solo
 dalla rete di casa. Quindi:
 
-- Sul router **disattiva UPnP** e verifica che **non ci sia alcun port-forward** verso il
-  mini PC: è ciò che impedisce l'esposizione accidentale su internet.
+- Sul router **disattiva UPnP** (di solito in *Advanced/NAT/Firewall*): impedisce che
+  app/dispositivi aprano porte verso internet da soli.
+- **Svuota il Port Forwarding** (*Virtual Servers / Inoltro porte*): nessuna regola verso
+  il mini PC o le porte dei servizi.
+- **DMZ**: verifica che sia disabilitata / nessun host. Se **non trovi la voce**, non è
+  attiva (va abilitata di proposito) → nessun problema.
 - `ufw` (§4.2) limita già SSH alla LAN; le porte dei servizi restano volutamente aperte in
   LAN. Un layer di autenticazione servirà **solo** il giorno che esponi il server da fuori.
+- Controprova (opzionale): dal telefono in **rete mobile** apri
+  `http://TUO_IP_PUBBLICO:8096` → non deve rispondere.
 
 ---
 
 Fatto. D'ora in poi accendi il mini PC → i container ripartono da soli
-(`restart: unless-stopped`), guardi, spegni. Rilanci `docker compose up -d` solo dopo
-aver cambiato la configurazione o aggiornato le versioni.
+(`restart: unless-stopped`), guardi, spegni con `sudo systemctl poweroff` (arresto
+pulito). Rilanci `docker compose up -d` solo dopo aver cambiato la configurazione o
+aggiornato le versioni.
