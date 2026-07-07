@@ -299,6 +299,7 @@ ip link    <span class="c"># annota il MAC: ti serve per WoL e prenotazione DHCP
       <li class="step"><div class="step-row"><input type="checkbox" id="s5-3"><label class="step-label" for="s5-3">Collegati via SSH</label>
         <div class="step-body"><div class="cmd"><pre>ssh <span class="c">TUO_UTENTE</span>@<span class="c">IP_DEL_MINIPC</span></pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
     </ol>
+    <div class="note info"><p><span class="tag">Wi-Fi → Ethernet (consigliato)</span></p><p>Cavo e Wi-Fi hanno MAC diversi: se passi a Ethernet rifai la prenotazione DHCP per il MAC cablato, assegnandogli lo <b>stesso IP</b> (così non tocchi <code class="inline">.env</code>). Il <b>Wake-on-LAN funziona solo su cavo</b> → fai la Fase 16 dopo il passaggio. Lo stack Docker non cambia. <b>Qualsiasi presa Ethernet di casa va bene</b>, purché sulla stessa rete (non una ospiti/VLAN separata): l'IP prenotato segue il dispositivo, non la presa.</p></div>
   </section>
 
   <!-- FASE 6 -->

@@ -74,6 +74,14 @@ Da qui in poi lavori via SSH **dal portatile** e scolleghi monitor/tastiera:
 ssh TUO_UTENTE@IP_DEL_MINIPC
 ```
 
+> **Wi-Fi → Ethernet (consigliato per un server).** Cavo e Wi-Fi hanno MAC diversi:
+> passando a Ethernet rifai la prenotazione DHCP per il **MAC dell'interfaccia cablata**,
+> assegnandole lo **stesso IP** (così non tocchi `.env`). Il **Wake-on-LAN funziona solo
+> su cavo**, quindi configura la Fase 16 dopo il passaggio (sull'interfaccia Ethernet). Lo
+> stack Docker non cambia. **Qualsiasi presa Ethernet di casa va bene**, purché sulla
+> stessa rete (non una Wi-Fi ospiti/VLAN separata): l'IP prenotato segue il dispositivo,
+> non la presa.
+
 ## 3. Aggiornamenti e firmware
 
 ```bash
