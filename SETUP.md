@@ -378,6 +378,11 @@ usi davvero, ogni container è superficie in più da mantenere.
 - **Homepage** ≠ Portainer: è una **dashboard** (lanciatore + widget di stato), non
   gestisce i container. Per il tuo uso è sufficiente.
 - **Backup dei config** (consigliato) — vedi sotto. È l'aggiunta che vale di più.
+- **byparr** — già incluso nel compose: bypassa il "Cloudflare challenge" degli indexer
+  pubblici in Prowlarr (Indexer Proxies → FlareSolverr → `http://mediaserver-byparr:8191`).
+  In Italia però il problema più comune è il **blocco DNS dell'ISP** sui tracker: per
+  questo `byparr` e `qbittorrent` usano `dns: 1.1.1.1` (risolvono l'IP reale). Se un
+  dominio dà `127.0.0.1` con `getent hosts`, è quello il caso.
 - **Dozzle** — visore di log dei container nel browser, leggero. Opzionale, se vuoi i
   log senza SSH.
 - Da **evitare** qui: *Watchtower* (auto-update: può rompere i media server),
