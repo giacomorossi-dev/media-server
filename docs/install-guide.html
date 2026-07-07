@@ -488,13 +488,19 @@ findmnt /mnt/media             <span class="c"># deve mostrare /dev/sdX1</span><
         <div class="step-body"><div class="cmd"><pre>sudo mkdir -p /mnt/media/torrents/{movies,tv} \
              /mnt/media/media/{movies,tv}
 sudo chown -R $USER:$USER /mnt/media</pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s12-4"><label class="step-label" for="s12-4">Fai partire Docker solo dopo il mount (disco USB)</label>
+        <div class="step-body"><p>Il box USB va in standby: così Docker attende il mount di <code class="inline">/mnt/media</code> e non scrive mai sull'SSD (il <code class="inline">timeout=30</code> in fstab dà già tempo al risveglio). Richiede Docker già installato (Fase 10).</p>
+          <div class="cmd"><pre>sudo mkdir -p /etc/systemd/system/docker.service.d
+printf '[Unit]\nRequiresMountsFor=/mnt/media\n' | \
+  sudo tee /etc/systemd/system/docker.service.d/require-media.conf
+sudo systemctl daemon-reload</pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
     </ol>
   </section>
 
   <!-- FASE 13 -->
   <section class="phase" id="f13">
     <div class="phase-head"><span class="phase-num">13</span><h2>Scaricare e configurare la v2</h2></div>
-    <p class="phase-intro">Cloni il repository, compili <code class="inline">.env</code> e attivi il transcoding.</p>
+    <p class="phase-intro">Cloni il repository, compili <code class="inline">.env</code> e avvii lo stack (il transcoding è già attivo nel compose).</p>
     <ol class="steps">
       <li class="step"><div class="step-row"><input type="checkbox" id="s13-1"><label class="step-label" for="s13-1">Clona il repo e passa al branch v2</label>
         <div class="step-body"><div class="cmd"><pre>git clone https://github.com/giacomorossi-dev/media-server.git
@@ -517,13 +523,6 @@ id -g    <span class="c"># -&gt; PGID</span></pre><button class="copy-btn" type=
         </div></div></li>
       <li class="step"><div class="step-row"><input type="checkbox" id="s13-4"><label class="step-label" for="s13-4">Transcoding VAAPI: già attivo (verifica solo <code class="inline">RENDER_GID</code>)</label>
         <div class="step-body"><p>Non devi più modificare il compose: il transcoding è <b>attivo di default</b>. Basta che <code class="inline">RENDER_GID</code> sia impostato nel <code class="inline">.env</code> (passo precedente) — altrimenti <code class="inline">docker compose</code> si ferma con un messaggio chiaro. Su hardware senza iGPU, commenta il blocco <code class="inline">devices:</code>/<code class="inline">group_add:</code> del servizio jellyfin.</p></div></div></li>
-      <li class="step"><div class="step-row"><input type="checkbox" id="s13-6"><label class="step-label" for="s13-6">Robustezza mount USB (se il disco va in standby)</label>
-        <div class="step-body"><p>I box USB mettono l'HDD in standby: così Docker parte <b>solo dopo</b> il mount di <code class="inline">/mnt/media</code> e non scrive mai sull'SSD.</p>
-          <div class="cmd"><pre>sudo mkdir -p /etc/systemd/system/docker.service.d
-printf '[Unit]\nRequiresMountsFor=/mnt/media\n' | \
-  sudo tee /etc/systemd/system/docker.service.d/require-media.conf
-sudo systemctl daemon-reload</pre><button class="copy-btn" type="button">Copia</button></div>
-          <p>(Il <code class="inline">timeout=30</code> nell'fstab della Fase 12 dà già tempo al disco di svegliarsi.)</p></div></div></li>
       <li class="step"><div class="step-row"><input type="checkbox" id="s13-5"><label class="step-label" for="s13-5">Avvia lo stack</label>
         <div class="step-body"><div class="cmd"><pre>docker compose up -d
 docker compose ps</pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
