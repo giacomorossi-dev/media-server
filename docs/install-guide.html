@@ -558,8 +558,15 @@ Prowlarr 9696 · Bazarr 6767 · qBittorrent 8080 · Backup 8082</pre></div>
       <li class="step"><div class="step-row"><input type="checkbox" id="s14p-1"><label class="step-label" for="s14p-1">Crea utente + password al primo avvio</label></div></li>
       <li class="step"><div class="step-row"><input type="checkbox" id="s14p-2"><label class="step-label" for="s14p-2">Copia la tua API key (<i>Settings → General → API Key</i>)</label></div></li>
       <li class="step"><div class="step-row"><input type="checkbox" id="s14p-3"><label class="step-label" for="s14p-3">Aggiungi gli indexer (<i>Indexers → Add Indexer</i> → Test → Save)</label></div></li>
-      <li class="step"><div class="step-row"><input type="checkbox" id="s14p-4"><label class="step-label" for="s14p-4">Collega Radarr: <i>Settings → Apps → +</i> → <code class="inline">http://mediaserver-radarr:7878</code> + API key di Radarr</label></div></li>
-      <li class="step"><div class="step-row"><input type="checkbox" id="s14p-5"><label class="step-label" for="s14p-5">Collega Sonarr: <code class="inline">http://mediaserver-sonarr:8989</code> + API key di Sonarr</label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14p-4"><label class="step-label" for="s14p-4">Collega Radarr: <i>Settings → Apps → + → Radarr</i></label>
+        <div class="step-body"><p>Nel form ci sono <b>due URL</b>, entrambe col nome container (mai <code class="inline">localhost</code>):</p>
+          <ul>
+            <li><b>Prowlarr Server</b>: <code class="inline">http://mediaserver-prowlarr:9696</code></li>
+            <li><b>Radarr Server</b>: <code class="inline">http://mediaserver-radarr:7878</code></li>
+            <li>+ <b>API key</b> di Radarr → Test → Save</li>
+          </ul>
+          <div class="note warn"><p><span class="tag">Perché</span></p><p>Il campo <i>Prowlarr Server</i> dice al *arr dove trovare Prowlarr. Se lo lasci a <code class="inline">localhost:9696</code>, dentro il container di Radarr «localhost» è Radarr stesso → il sync fallisce.</p></div></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14p-5"><label class="step-label" for="s14p-5">Collega Sonarr: come Radarr — <b>Prowlarr Server</b> <code class="inline">http://mediaserver-prowlarr:9696</code>, <b>Sonarr Server</b> <code class="inline">http://mediaserver-sonarr:8989</code> + API key di Sonarr</label></div></li>
       <li class="step"><div class="step-row"><input type="checkbox" id="s14p-6"><label class="step-label" for="s14p-6">Indexer bloccato da Cloudflare? Collega Byparr</label>
         <div class="step-body"><p>Se il Test di un indexer pubblico dà «blocked by CloudFlare» (tipico di 1337x): il container <code class="inline">byparr</code> è nel compose (dopo averlo aggiunto: <code class="inline">git pull &amp;&amp; docker compose up -d</code>).</p>
           <ul>
