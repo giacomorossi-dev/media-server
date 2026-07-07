@@ -26,12 +26,17 @@ la **migrazione dei dati** vedi il [README](./README.md).
 2. Scrivi la ISO su USB. **Su Fedora, senza installare nulla:** apri *Dischi* (GNOME) →
    *"Ripristina immagine disco…"* → scegli la ISO. In alternativa `dd`, oppure
    [balenaEtcher](https://etcher.balena.io) (cross-piattaforma).
-3. Nel BIOS del Beelink (<kbd>Canc</kbd>/<kbd>F7</kbd>): disabilita Secure Boot, avvia da USB.
+3. Nel BIOS del Beelink (<kbd>Canc</kbd>/<kbd>F7</kbd>): disabilita Secure Boot (e Fast Boot), avvia da USB.
+   > Se la USB non compare nel menù di boot, quasi sempre non è avviabile: verifica da un PC con
+   > `lsblk -f` che mostri `iso9660` + `vfat`, altrimenti riscrivila (GNOME Dischi / `dd`). Se compare
+   > **due volte**, scegli la voce **«UEFI:»**.
 4. Durante l'installazione:
    - lingua/tastiera Italiano, hostname `mediaserver`
    - password di **root vuota** → il primo utente diventa `sudo`
-   - partizionamento guidato sull'**SSD di sistema** (⚠️ non toccare eventuali dischi dei media)
-   - «Selezione software»: **deseleziona** il desktop, tieni solo **SSH server** + utilità standard
+   - partizionamento guidato sull'**SSD interno** (⚠️ non il WD Red dei media) → schema **«Tutti i file in una partizione»** (Docker sta in `/var/lib/docker`: partizione unica = nessun `/var` separato che si riempie)
+   - mirror: **Italia** → `deb.debian.org` se proposto; proxy HTTP **vuoto**
+   - «Selezione software»: **deseleziona** il desktop/GNOME, tieni solo **SSH server** + utilità standard
+   - **GRUB** (bootloader): rispondi **Sì**, installalo sull'SSD; poi togli la USB e riavvia
 
 ## 2. Primo accesso e IP fisso
 

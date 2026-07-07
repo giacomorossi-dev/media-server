@@ -254,6 +254,7 @@ sudo dd if=debian-*-amd64-netinst.iso of=/dev/sdX bs=4M status=progress oflag=di
         <div class="step-body"><p>Serve per accendere il server dal telefono (Fase 16). Il WoL richiede la <b>rete via cavo</b>.</p></div></div></li>
       <li class="step"><div class="step-row"><input type="checkbox" id="s3-4"><label class="step-label" for="s3-4">Avvia dalla chiavetta (voce UEFI col nome della USB)</label></div></li>
     </ol>
+    <div class="note warn"><p><span class="tag">Se la USB non compare nel menù</span></p><p>Se nel menù di avvio (F7) vedi solo l'SSD e non la USB, quasi sempre <b>non è stata scritta come avviabile</b>. Da un PC verifica con <code class="inline">lsblk -f</code> che la chiavetta mostri <code class="inline">iso9660</code> + <code class="inline">vfat</code>; se no, riscrivila (GNOME Dischi «Ripristina immagine disco» o <code class="inline">dd</code>). Se invece compare <b>due volte</b>, scegli la voce con <b>«UEFI:»</b>. Controlla anche <b>Fast Boot = Disabled</b> e prova un'altra porta USB (2.0).</p></div>
   </section>
 
   <!-- FASE 4 -->
@@ -265,11 +266,14 @@ sudo dd if=debian-*-amd64-netinst.iso of=/dev/sdX bs=4M status=progress oflag=di
       <li class="step"><div class="step-row"><input type="checkbox" id="s4-2"><label class="step-label" for="s4-2">Hostname <code class="inline">mediaserver</code>, dominio vuoto</label></div></li>
       <li class="step"><div class="step-row"><input type="checkbox" id="s4-3"><label class="step-label" for="s4-3">Password di root <b>vuota</b>, poi crea il tuo utente con password robusta</label>
         <div class="step-body"><div class="note info"><p><span class="tag">Perché</span></p><p>Root vuota → Debian configura <code class="inline">sudo</code> per il tuo utente. È già l'account amministrativo dedicato delle routine da VPS.</p></div></div></div></li>
-      <li class="step"><div class="step-row"><input type="checkbox" id="s4-4"><label class="step-label" for="s4-4">Partizionamento: «Guidato — usa l'intero disco» sull'SSD di sistema</label>
-        <div class="step-body"><div class="note danger"><p><span class="tag">⚠ Disco giusto</span></p><p>Se vedi un secondo disco con i media, <b>non sceglierlo</b>. Schema: «Tutti i file in una partizione».</p></div></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s4-4"><label class="step-label" for="s4-4">Partizionamento: «Guidato — usa l'intero disco» → «Tutti i file in una partizione»</label>
+        <div class="step-body"><div class="note danger"><p><span class="tag">⚠ Disco giusto</span></p><p>Scegli l'<b>SSD interno (~500 GB)</b>, <b>non</b> il WD Red da 4 TB dei media. Schema <b>«Tutti i file in una partizione»</b>: Docker tiene tutto in <code class="inline">/var/lib/docker</code>, quindi una partizione unica evita che un <code class="inline">/var</code> separato si riempia e pianti lo stack.</p></div></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s4-7"><label class="step-label" for="s4-7">Mirror e proxy</label>
+        <div class="step-body"><ul><li>Nazione mirror: <b>Italia</b> → poi <code class="inline">deb.debian.org</code> se proposto (CDN ufficiale), altrimenti il mirror italiano di default.</li><li>Proxy HTTP: <b>lascialo vuoto</b>.</li></ul></div></div></li>
       <li class="step"><div class="step-row"><input type="checkbox" id="s4-5"><label class="step-label" for="s4-5">«Selezione software»: DESELEZIONA il desktop, tieni solo «SSH server» + utilità standard</label>
         <div class="step-body"><p><kbd>spazio</kbd> per spuntare/togliere. Via «Debian desktop environment» e «GNOME».</p></div></div></li>
-      <li class="step"><div class="step-row"><input type="checkbox" id="s4-6"><label class="step-label" for="s4-6">Installa GRUB sull'SSD, riavvia, rimuovi la USB</label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s4-6"><label class="step-label" for="s4-6">Installa GRUB sull'SSD, poi riavvia rimuovendo la USB</label>
+        <div class="step-body"><p>GRUB è il <b>bootloader</b> (avvia Linux all'accensione). Rispondi <b>Sì</b> e installalo sull'SSD di sistema (es. <code class="inline">/dev/nvme0n1</code>). Alla schermata «Installazione completata»: <b>togli la USB</b> e riavvia → parte Debian dall'SSD.</p></div></div></li>
     </ol>
   </section>
 
