@@ -48,10 +48,20 @@ sudo apt update && sudo apt full-upgrade -y
 sudo apt install -y firmware-amd-graphics amd64-microcode curl git ca-certificates
 ```
 
-Se un pacchetto firmware non si trova, abilita il componente `non-free-firmware`:
+Se un pacchetto firmware non si trova, abilita il componente `non-free-firmware`.
+Questo snippet funziona sia su Debian 13+ (formato deb822) sia su Debian 12 (classico):
 
 ```bash
-sudo sed -i 's/ main$/ main non-free-firmware/' /etc/apt/sources.list
+# Debian 13+ (/etc/apt/sources.list.d/debian.sources)
+if [ -f /etc/apt/sources.list.d/debian.sources ]; then
+  sudo sed -i '/^Components:/{/non-free-firmware/!s/$/ non-free-firmware/}' \
+    /etc/apt/sources.list.d/debian.sources
+fi
+# Debian 12 (/etc/apt/sources.list)
+if [ -f /etc/apt/sources.list ]; then
+  sudo sed -i '/^deb .*debian/{/non-free-firmware/!s/$/ non-free-firmware/}' \
+    /etc/apt/sources.list
+fi
 sudo apt update
 ```
 

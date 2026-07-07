@@ -199,6 +199,10 @@
       <p><span class="tag">⚠ Attenzione ai dati</span></p>
       <p>Riformattare <b>cancella tutto il disco di sistema</b>. Se i tuoi film e serie sono sul disco interno, <b>copiali altrove prima</b>. Se stanno su un <b>disco dedicato</b>, durante il partizionamento (Fase 04) fai attenzione a <b>non selezionarlo</b>.</p>
     </div>
+    <div class="note info">
+      <p><span class="tag">Ordine consigliato</span></p>
+      <p>Segui le fasi in sequenza. Checkpoint chiave: dopo la <b>Fase 13</b> verifica che lo stack sia su (<code class="inline">docker compose ps</code> → tutti «Up») <b>prima</b> di passare a Backup (15) e Wake-on-LAN (16). Così, se qualcosa non parte, lo isoli con meno pezzi in gioco.</p>
+    </div>
     <ol class="steps">
       <li class="step"><div class="step-row"><input type="checkbox" id="s0-1"><label class="step-label" for="s0-1">Backup dei media esistenti (se sul disco interno) su un disco esterno</label></div></li>
       <li class="step"><div class="step-row"><input type="checkbox" id="s0-2"><label class="step-label" for="s0-2">Chiavetta USB da almeno 2 GB (verrà cancellata)</label></div></li>
@@ -290,7 +294,16 @@ ip link    <span class="c"># annota il MAC: ti serve per WoL e prenotazione DHCP
       <li class="step"><div class="step-row"><input type="checkbox" id="s6-2"><label class="step-label" for="s6-2">Firmware GPU AMD, microcodice e strumenti base</label>
         <div class="step-body"><div class="cmd"><pre>sudo apt install -y firmware-amd-graphics amd64-microcode \
   curl git ca-certificates</pre><button class="copy-btn" type="button">Copia</button></div>
-          <div class="note warn"><p><span class="tag">Se «package not found»</span></p><div class="cmd"><pre>sudo sed -i 's/ main$/ main non-free-firmware/' /etc/apt/sources.list
+          <div class="note warn"><p><span class="tag">Se «package not found»</span></p><p>Abilita <code class="inline">non-free-firmware</code> (funziona sia su Debian 13+ deb822 sia su Debian 12):</p><div class="cmd"><pre># Debian 13+ (deb822)
+if [ -f /etc/apt/sources.list.d/debian.sources ]; then
+  sudo sed -i '/^Components:/{/non-free-firmware/!s/$/ non-free-firmware/}' \
+    /etc/apt/sources.list.d/debian.sources
+fi
+# Debian 12 (classico)
+if [ -f /etc/apt/sources.list ]; then
+  sudo sed -i '/^deb .*debian/{/non-free-firmware/!s/$/ non-free-firmware/}' \
+    /etc/apt/sources.list
+fi
 sudo apt update</pre><button class="copy-btn" type="button">Copia</button></div></div></div></div></li>
     </ol>
   </section>
