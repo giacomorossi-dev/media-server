@@ -45,7 +45,10 @@ ip -4 addr show scope global   # trova l'IP
 ip link                        # trova il MAC (per la prenotazione DHCP)
 ```
 
-Fissa l'IP con una **prenotazione DHCP nel router** (associa IP ↔ MAC). Da qui lavori via SSH:
+Il comando `ip`/`ip link` qui sopra va eseguito **sul mini PC** (monitor ancora attaccato),
+oppure puoi leggere l'IP dalla lista dispositivi DHCP del router. Fissa poi l'IP con una
+**prenotazione DHCP nel router** (associa IP ↔ MAC). Da qui in poi lavori via SSH **dal
+portatile** e scolleghi monitor/tastiera:
 
 ```bash
 ssh TUO_UTENTE@IP_DEL_MINIPC

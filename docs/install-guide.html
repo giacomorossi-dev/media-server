@@ -280,7 +280,7 @@ sudo dd if=debian-*-amd64-netinst.iso of=/dev/sdX bs=4M status=progress oflag=di
   <!-- FASE 5 -->
   <section class="phase" id="f5">
     <div class="phase-head"><span class="phase-num">05</span><h2>Primo accesso e IP fisso</h2></div>
-    <p class="phase-intro">Da qui scolleghi il monitor e lavori via SSH dal portatile.</p>
+    <p class="phase-intro">Il primo comando (trovare l'IP) lo fai <b>sul mini PC</b> col monitor attaccato; poi passi al <b>portatile via SSH</b> e da lì in poi (Fase 06→) scolleghi monitor e tastiera.</p>
     <ol class="steps">
       <li class="step"><div class="step-row"><input type="checkbox" id="s5-1"><label class="step-label" for="s5-1">Trova IP e MAC</label>
         <div class="step-body"><div class="cmd"><pre>ip -4 addr show scope global
