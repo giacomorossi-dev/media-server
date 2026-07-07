@@ -3,6 +3,8 @@
 Stack self-hosted **locale** per scaricare e guardare film e serie TV, pensato per
 un mini PC **acceso a domanda** (si accende, si scarica, si guarda, si spegne).
 
+> 🛠️ Installazione del server da zero (Debian headless + hardening + Docker): vedi **[SETUP.md](./SETUP.md)**.
+
 ## Servizi
 
 | Servizio | Porta | Ruolo |
