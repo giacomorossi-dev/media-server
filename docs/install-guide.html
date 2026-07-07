@@ -477,10 +477,13 @@ getent group docker    <span class="c"># -&gt; DOCKER_GID</span></pre><button cl
       <li class="step"><div class="step-row"><input type="checkbox" id="s12-2"><label class="step-label" for="s12-2">Monta in modo persistente (fstab via UUID)</label>
         <div class="step-body"><div class="cmd"><pre>sudo mkdir -p /mnt/media
 UUID=$(sudo blkid -s UUID -o value /dev/sdX1)
-echo "UUID=$UUID  /mnt/media  ext4  defaults,nofail,x-systemd.device-timeout=10  0  2" \
+echo "UUID=$UUID  /mnt/media  ext4  defaults,nofail,x-systemd.device-timeout=30  0  2" \
   | sudo tee -a /etc/fstab
-sudo mount -a</pre><button class="copy-btn" type="button">Copia</button></div>
-          <div class="note info"><p><span class="tag">Tienilo collegato</span></p><p>Se all'avvio non è montato, i container scriverebbero nella cartella vuota sull'SSD.</p></div></div></div></li>
+sudo systemctl daemon-reload   <span class="c"># CON sudo</span>
+sudo mount /mnt/media
+findmnt /mnt/media             <span class="c"># deve mostrare /dev/sdX1</span></pre><button class="copy-btn" type="button">Copia</button></div>
+          <div class="note info"><p><span class="tag">Tienilo collegato</span></p><p>Se all'avvio non è montato, i container scriverebbero nella cartella vuota sull'SSD.</p></div>
+          <div class="note warn"><p><span class="tag">Insidie viste sul campo</span></p><p><code class="inline">nofail</code> fa <b>fallire il mount in silenzio</b>: verifica sempre con <code class="inline">findmnt /mnt/media</code> (se vuoto = non montato). I box USB si svegliano in ~5-6s: monta esplicito <code class="inline">sudo mount /dev/sdX1 /mnt/media</code> e guarda <code class="inline">sudo dmesg | tail</code>. Un ext4 montato ha sempre <code class="inline">lost+found</code>: se <code class="inline">ls</code> non lo mostra, non è montato. <code class="inline">daemon-reload</code> vuole <b>sudo</b>.</p></div></div></div></li>
       <li class="step"><div class="step-row"><input type="checkbox" id="s12-3"><label class="step-label" for="s12-3">Crea le cartelle a root unica</label>
         <div class="step-body"><div class="cmd"><pre>sudo mkdir -p /mnt/media/torrents/{movies,tv} \
              /mnt/media/media/{movies,tv}
@@ -520,11 +523,11 @@ id -g    <span class="c"># -&gt; PGID</span></pre><button class="copy-btn" type=
       - "${RENDER_GID}"</pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
       <li class="step"><div class="step-row"><input type="checkbox" id="s13-6"><label class="step-label" for="s13-6">Robustezza mount USB (se il disco va in standby)</label>
         <div class="step-body"><p>I box USB mettono l'HDD in standby: così Docker parte <b>solo dopo</b> il mount di <code class="inline">/mnt/media</code> e non scrive mai sull'SSD.</p>
-          <div class="cmd"><pre>sudo sed -i 's/x-systemd.device-timeout=10/x-systemd.device-timeout=30/' /etc/fstab
-sudo mkdir -p /etc/systemd/system/docker.service.d
+          <div class="cmd"><pre>sudo mkdir -p /etc/systemd/system/docker.service.d
 printf '[Unit]\nRequiresMountsFor=/mnt/media\n' | \
   sudo tee /etc/systemd/system/docker.service.d/require-media.conf
-sudo systemctl daemon-reload</pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
+sudo systemctl daemon-reload</pre><button class="copy-btn" type="button">Copia</button></div>
+          <p>(Il <code class="inline">timeout=30</code> nell'fstab della Fase 12 dà già tempo al disco di svegliarsi.)</p></div></div></li>
       <li class="step"><div class="step-row"><input type="checkbox" id="s13-5"><label class="step-label" for="s13-5">Avvia lo stack</label>
         <div class="step-body"><div class="cmd"><pre>docker compose up -d
 docker compose ps</pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>

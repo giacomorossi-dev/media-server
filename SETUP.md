@@ -296,9 +296,12 @@ Monta in modo persistente via UUID (sopravvive ai riavvii e al cambio di lettera
 ```bash
 sudo mkdir -p /mnt/media
 UUID=$(sudo blkid -s UUID -o value /dev/sdX1)   # <-- il TUO device
-echo "UUID=$UUID  /mnt/media  ext4  defaults,nofail,x-systemd.device-timeout=10  0  2" \
+# timeout=30: i box USB si svegliano lenti (vedi sotto)
+echo "UUID=$UUID  /mnt/media  ext4  defaults,nofail,x-systemd.device-timeout=30  0  2" \
   | sudo tee -a /etc/fstab
-sudo mount -a
+sudo systemctl daemon-reload    # CON sudo (senza dà "Access denied")
+sudo mount /mnt/media
+findmnt /mnt/media              # deve mostrare /dev/sdX1; se vuoto NON è montato
 sudo chown -R $USER:$USER /mnt/media
 ```
 
@@ -306,17 +309,25 @@ sudo chown -R $USER:$USER /mnt/media
 > sempre collegato** al mini PC: se non è montato all'avvio, i container scriverebbero
 > nella cartella vuota sull'SSD invece che sul disco.
 
+> **Verifica il mount — insidie viste sul campo:**
+> - `nofail` fa **fallire il mount in silenzio** (nessun errore da `mount -a`): verifica
+>   *sempre* con `findmnt /mnt/media`.
+> - Se è un **box USB che va in standby**, il disco impiega ~5-6s a svegliarsi: monta in
+>   modo esplicito (`sudo mount /dev/sdX1 /mnt/media`) per svegliarlo e vedere l'errore
+>   reale; `sudo dmesg | tail` mostra `Spinning up disk... ready`.
+> - `ls /mnt/media` deve mostrare **`lost+found`** (un ext4 ce l'ha sempre): se manca,
+>   stai guardando la cartella-mountpoint vuota, non il disco montato.
+> - Dopo ogni modifica a `/etc/fstab`: `sudo systemctl daemon-reload` (**con sudo**).
+
 > (Opzionale) Preavviso guasti disco: `sudo apt install -y smartmontools` poi
 > `sudo smartctl -H /dev/sdX` per un check rapido della salute (i media non li salviamo,
 > ma sapere che il disco sta morendo è comodo).
 
-**Disco USB che va in standby.** Molti box USB (es. Inateck/ASMedia) mettono l'HDD in
-standby e impiegano qualche secondo al risveglio: al boot il mount potrebbe non essere
-pronto quando parte Docker, che finirebbe per scrivere sull'SSD. Alza il timeout di
-risveglio e fai **dipendere Docker dal mount** di `/mnt/media`:
+**Docker deve partire dopo il mount.** Il `timeout=30` (sopra) dà tempo al box USB di
+svegliarsi al boot; in più facciamo **dipendere Docker dal mount** di `/mnt/media`, così i
+container non partono mai prima (evitando di scrivere sull'SSD):
 
 ```bash
-sudo sed -i 's/x-systemd.device-timeout=10/x-systemd.device-timeout=30/' /etc/fstab
 sudo mkdir -p /etc/systemd/system/docker.service.d
 printf '[Unit]\nRequiresMountsFor=/mnt/media\n' | \
   sudo tee /etc/systemd/system/docker.service.d/require-media.conf
