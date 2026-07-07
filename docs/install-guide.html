@@ -501,15 +501,17 @@ git checkout v2</pre><button class="copy-btn" type="button">Copia</button></div>
         <div class="step-body"><div class="cmd"><pre>cp .env.example .env
 id -u    <span class="c"># -&gt; PUID</span>
 id -g    <span class="c"># -&gt; PGID</span></pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
-      <li class="step"><div class="step-row"><input type="checkbox" id="s13-3"><label class="step-label" for="s13-3">Compila <code class="inline">.env</code></label>
-        <div class="step-body"><div class="cmd"><pre>TZ=Europe/Rome
-PUID=<span class="c">id -u (di solito 1000)</span>
-PGID=<span class="c">id -g (di solito 1000)</span>
-MEDIA_ROOT=/mnt/media
-SERVER_IP=<span class="c">IP fisso del mini PC</span>
-HOMEPAGE_ALLOWED_HOSTS=<span class="c">IP</span>:3000
-RENDER_GID=<span class="c">dalla Fase 11</span>
-DOCKER_GID=<span class="c">dalla Fase 11</span></pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s13-3"><label class="step-label" for="s13-3">Compila <code class="inline">.env</code> con <code class="inline">nano .env</code></label>
+        <div class="step-body"><p>⚠️ Non è un comando da incollare: apri <code class="inline">nano .env</code> e imposta questi valori:</p>
+          <ul>
+            <li><code class="inline">PUID</code> / <code class="inline">PGID</code> = il tuo <code class="inline">id -u</code> / <code class="inline">id -g</code> (di solito 1000)</li>
+            <li><code class="inline">MEDIA_ROOT=/mnt/media</code> (già impostato)</li>
+            <li><code class="inline">SERVER_IP</code> = l'IP fisso prenotato del mini PC</li>
+            <li><code class="inline">HOMEPAGE_ALLOWED_HOSTS</code> = quell'IP seguito da <code class="inline">:3000</code></li>
+            <li><code class="inline">RENDER_GID</code> / <code class="inline">DOCKER_GID</code> = i GID dalla Fase 11 (<code class="inline">getent group render</code> / <code class="inline">getent group docker</code>)</li>
+          </ul>
+          <p>Salva con <kbd>Ctrl+O</kbd> → <kbd>Invio</kbd> → <kbd>Ctrl+X</kbd>.</p>
+        </div></div></li>
       <li class="step"><div class="step-row"><input type="checkbox" id="s13-4"><label class="step-label" for="s13-4">Attiva il transcoding nel compose</label>
         <div class="step-body"><p><code class="inline">nano docker-compose.yml</code>, blocco <b>jellyfin</b>, togli il <code class="inline">#</code> da:</p>
           <div class="cmd"><pre>    devices:

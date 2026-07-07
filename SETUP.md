@@ -332,17 +332,24 @@ partono (meglio che scrivere sull'SSD).
 git clone https://github.com/giacomorossi-dev/media-server.git
 cd media-server
 git checkout v2
-
-# cartelle a root unica sul disco esterno (hardlink)
-sudo mkdir -p /mnt/media/torrents/{movies,tv} /mnt/media/media/{movies,tv}
-sudo chown -R $USER:$USER /mnt/media
-
 cp .env.example .env
-# compila .env: PUID/PGID = `id -u`/`id -g`, MEDIA_ROOT, SERVER_IP,
-# HOMEPAGE_ALLOWED_HOSTS, RENDER_GID, DOCKER_GID
-# poi decommenta devices/group_add nel blocco jellyfin del docker-compose.yml
+```
 
+Con `nano .env` imposta (le cartelle e la robustezza del mount le hai già fatte in §7):
+- `PUID` / `PGID` = il tuo `id -u` / `id -g` (di solito 1000)
+- `SERVER_IP` = l'IP fisso prenotato; `HOMEPAGE_ALLOWED_HOSTS` = `IP:3000`
+- `RENDER_GID` / `DOCKER_GID` = i GID (§6/VAAPI: `getent group render` / `getent group docker`)
+- `MEDIA_ROOT=/mnt/media` è già impostato
+
+Attiva il **transcoding**: in `docker-compose.yml`, blocco `jellyfin`, togli il `#` da
+`devices:` / `- /dev/dri:/dev/dri` / `group_add:` / `- "${RENDER_GID}"`.
+
+Poi verifica e avvia:
+
+```bash
+docker compose config >/dev/null && echo OK      # nessun errore di sintassi
 docker compose up -d
+docker compose ps                                 # tutti i servizi "Up"
 ```
 
 Per la **configurazione delle app** e la **migrazione dei media** dalla v1 → [README](./README.md).
