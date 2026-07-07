@@ -31,11 +31,15 @@ Accesso da un browser sulla rete di casa: `http://IP_DEL_MINIPC:PORTA`
 
 ## Struttura delle cartelle (importante)
 
+I media stanno su un **disco esterno** montato in `/mnt/media` (= `MEDIA_ROOT`). Il
+montaggio persistente del disco (fstab, filesystem ext4) è descritto in
+**[SETUP.md](./SETUP.md)**.
+
 Perché gli hardlink funzionino, download e libreria devono stare **sotto un'unica
-radice** montata identica in ogni container. Layout richiesto sotto `MEDIA_ROOT`:
+radice** — cioè sullo **stesso disco** — montata identica in ogni container:
 
 ```
-/mnt/media                 (= MEDIA_ROOT, montato come /data nei container)
+/mnt/media                 (= MEDIA_ROOT = disco esterno, montato come /data)
 ├── torrents/              (qBittorrent scarica qui)
 │   ├── movies/
 │   └── tv/
@@ -44,8 +48,11 @@ radice** montata identica in ogni container. Layout richiesto sotto `MEDIA_ROOT`
     └── tv/
 ```
 
-Regola d'oro: **mai** montare `/downloads` e `/media` come volumi separati — è ciò
-che rompe gli hardlink e forza le copie.
+Regole d'oro:
+- **mai** montare `torrents/` e `media/` come volumi separati o su dischi diversi — è
+  ciò che rompe gli hardlink e forza le copie;
+- il disco va formattato **ext4**: exFAT non supporta gli hardlink, NTFS gestisce male
+  i permessi Linux.
 
 ## Primo avvio
 
@@ -58,12 +65,14 @@ che rompe gli hardlink e forza le copie.
    getent group render    # -> RENDER_GID (solo se vuoi il transcoding HW)
    ```
 
-2. **Prepara le cartelle** (vedi anche "Migrazione dalla v1" sotto)
+2. **Prepara le cartelle** (il disco esterno dev'essere già montato — vedi SETUP.md)
    ```bash
-   mkdir -p /mnt/media/torrents/{movies,tv} /mnt/media/media/{movies,tv}
-   chown -R 1001:1001 /mnt/media
-   chown -R 1001:1001 homepage    # Homepage gira come 1001 e scrive i suoi log qui
+   sudo mkdir -p /mnt/media/torrents/{movies,tv} /mnt/media/media/{movies,tv}
+   sudo chown -R $USER:$USER /mnt/media
    ```
+   > `PUID`/`PGID` nel `.env` devono coincidere col tuo utente (`id -u` / `id -g`):
+   > così i file dei media sono tuoi e la cartella `homepage/` (clonata da te) è già
+   > scrivibile dai container.
 
 3. **Avvia**
    ```bash
@@ -107,7 +116,7 @@ mv /mnt/media/downloads/* /mnt/media/torrents/ 2>/dev/null; rmdir /mnt/media/dow
 #    ADATTA questi comandi ai nomi reali delle tue cartelle attuali!
 #    es: mv "/mnt/media/Film" /mnt/media/media/movies  ...
 
-chown -R 1001:1001 /mnt/media
+sudo chown -R $USER:$USER /mnt/media
 ```
 
 Dopo lo spostamento, in Radarr/Sonarr aggiorna la *root folder* alla nuova posizione
@@ -118,16 +127,18 @@ Dopo lo spostamento, in Radarr/Sonarr aggiorna la *root folder* alla nuova posiz
 
 ## Transcoding hardware
 
-Serve se un file non è in *direct play* sul client (codec non supportato). Sul mini PC:
+Serve se un file non è in *direct play* sul client (codec non supportato). La iGPU
+del Beelink EQR6 (Radeon 660M) usa **VAAPI**. Sul mini PC:
 
 ```bash
-ls /dev/dri            # deve esserci renderD128 (iGPU Intel/AMD)
+ls /dev/dri            # deve esserci renderD128
 getent group render    # annota il GID
 ```
 
 Se presente: metti il GID in `RENDER_GID` (`.env`) e **decommenta** le righe
 `devices:` e `group_add:` nel blocco `jellyfin` del `docker-compose.yml`, poi in
-Jellyfin abilita *Dashboard → Playback → Hardware acceleration* (VAAPI / QSV).
+Jellyfin abilita *Dashboard → Playback → Hardware acceleration* = **VAAPI**, device
+`/dev/dri/renderD128` (non «Quick Sync», che è solo Intel).
 
 ## qBittorrent: limitare il seeding (niente VPN)
 

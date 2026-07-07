@@ -177,14 +177,50 @@ getent group render   # -> RENDER_GID  (per .env)
 getent group docker   # -> DOCKER_GID  (per .env)
 ```
 
-## 7. Deploy dello stack v2
+## 7. Disco esterno per i media
+
+I media (e i download) stanno su un **disco esterno** montato in `/mnt/media`. Deve
+essere formattato **ext4**: exFAT non supporta gli hardlink, NTFS gestisce male i
+permessi Linux.
+
+Identifica il disco e la sua partizione:
+
+```bash
+lsblk -f          # trova il device (es. /dev/sda1) e il filesystem attuale
+```
+
+> ⚠️ Se il disco contiene già dati e NON è ext4, salvali altrove: formattarlo li
+> cancella. Se è **già ext4** con i tuoi media, salta la formattazione e vai all'fstab.
+
+Formatta in ext4 (⚠️ cancella il disco — verifica il device giusto!):
+
+```bash
+sudo mkfs.ext4 -L media /dev/sdX1        # <-- metti il TUO device
+```
+
+Monta in modo persistente via UUID (sopravvive ai riavvii e al cambio di lettera):
+
+```bash
+sudo mkdir -p /mnt/media
+UUID=$(sudo blkid -s UUID -o value /dev/sdX1)   # <-- il TUO device
+echo "UUID=$UUID  /mnt/media  ext4  defaults,nofail,x-systemd.device-timeout=10  0  2" \
+  | sudo tee -a /etc/fstab
+sudo mount -a
+sudo chown -R $USER:$USER /mnt/media
+```
+
+> `nofail` evita che il boot si blocchi se il disco è scollegato. **Tieni il disco
+> sempre collegato** al mini PC: se non è montato all'avvio, i container scriverebbero
+> nella cartella vuota sull'SSD invece che sul disco.
+
+## 8. Deploy dello stack v2
 
 ```bash
 git clone https://github.com/giacomorossi-dev/media-server.git
 cd media-server
 git checkout v2
 
-# cartelle a root unica (hardlink)
+# cartelle a root unica sul disco esterno (hardlink)
 sudo mkdir -p /mnt/media/torrents/{movies,tv} /mnt/media/media/{movies,tv}
 sudo chown -R $USER:$USER /mnt/media
 
@@ -197,6 +233,44 @@ docker compose up -d
 ```
 
 Per la **configurazione delle app** e la **migrazione dei media** dalla v1 → [README](./README.md).
+
+## 9. Strumenti opzionali (cosa serve e cosa no)
+
+Onestamente, per questo setup non serve molto altro. La regola: aggiungi solo ciò che
+usi davvero, ogni container è superficie in più da mantenere.
+
+- **Portainer** — GUI di gestione Docker (avvia/ferma container, log, exec). **Non
+  necessario**: gestisci lo stack con `docker compose` da terminale e vedi lo stato in
+  Homepage. Ha inoltre pieno controllo sul demone Docker (= root), quindi è anche
+  superficie di rischio. Aggiungilo solo se preferisci cliccare invece di usare SSH.
+- **Homepage** ≠ Portainer: è una **dashboard** (lanciatore + widget di stato), non
+  gestisce i container. Per il tuo uso è sufficiente.
+- **Backup dei config** (consigliato) — vedi sotto. È l'aggiunta che vale di più.
+- **Dozzle** — visore di log dei container nel browser, leggero. Opzionale, se vuoi i
+  log senza SSH.
+- Da **evitare** qui: *Watchtower* (auto-update: può rompere i media server),
+  *Diun/Uptime Kuma* (notifiche/monitoraggio: inutili su una macchina spenta gran
+  parte del tempo).
+
+## 10. Backup dei config (consigliato)
+
+I volumi `mediaserver-*-config` contengono tutte le impostazioni delle app: perderli
+significa riconfigurare tutto. Un backup periodico sullo stesso disco esterno:
+
+```bash
+mkdir -p /mnt/media/backup
+docker run --rm \
+  -v /var/lib/docker/volumes:/vols:ro \
+  -v /mnt/media/backup:/out \
+  debian:stable-slim \
+  tar czf /out/config-$(date +%F).tar.gz -C /vols \
+    mediaserver-jellyfin-config mediaserver-radarr-config \
+    mediaserver-sonarr-config mediaserver-prowlarr-config \
+    mediaserver-bazarr-config mediaserver-qbittorrent-config
+```
+
+Lancialo ogni tanto (o via cron quando la macchina è accesa). Per ripristinare, scompatti
+l'archivio nella stessa posizione a stack spento.
 
 ---
 

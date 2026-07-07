@@ -14,8 +14,8 @@ name: mediaserver
 # ---------------------------------------------------------------------------
 
 x-common-env: &common-env
-  PUID: ${PUID:-1001}
-  PGID: ${PGID:-1001}
+  PUID: ${PUID:-1000}
+  PGID: ${PGID:-1000}
   TZ: ${TZ:-Europe/Rome}
 
 services:
@@ -127,8 +127,8 @@ services:
     container_name: mediaserver-homepage
     restart: unless-stopped
     environment:
-      PUID: ${PUID:-1001}
-      PGID: ${PGID:-1001}
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
       # Obbligatorio in Homepage v1.x: host da cui è ammesso l'accesso
       HOMEPAGE_ALLOWED_HOSTS: ${HOMEPAGE_ALLOWED_HOSTS}
       # Variabili usate nelle config (services.yaml / widgets.yaml)
