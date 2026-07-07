@@ -1,0 +1,647 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Installazione Media Server v2 — Beelink EQR6</title>
+<meta name="description" content="Checklist completa end-to-end: da Debian allo stack v2, con hardening, backup su cloud e accensione da telefono, per un Beelink EQR6.">
+<style>
+  :root {
+    --ground: #eef1f3;
+    --surface: #ffffff;
+    --surface-2: #f7f9fa;
+    --ink: #14181c;
+    --muted: #59636c;
+    --faint: #8b949d;
+    --line: #dfe4e8;
+    --line-strong: #c9d1d7;
+    --accent: #0f766e;
+    --accent-ink: #0a5750;
+    --accent-soft: #d9ede9;
+    --code-bg: #10161d;
+    --code-ink: #dfe7ee;
+    --code-faint: #6e7c8a;
+    --code-line: #232d38;
+    --warn: #9a5b06;
+    --warn-soft: #fbeede;
+    --danger: #b0202a;
+    --danger-soft: #fbe4e4;
+    --ok: #17795e;
+    --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    --wrap: 60rem;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: var(--wrap); margin: 0 auto; padding: 0 1.25rem; }
+
+  a { color: var(--accent-ink); text-underline-offset: 2px; }
+  a:hover { color: var(--accent); }
+
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+
+  header.masthead { background: var(--surface); border-bottom: 1px solid var(--line); }
+  .masthead .wrap { padding-top: 2.4rem; padding-bottom: 1.6rem; }
+  .eyebrow { font-size: .72rem; letter-spacing: .16em; text-transform: uppercase; color: var(--accent-ink); font-weight: 700; margin: 0 0 .5rem; }
+  h1.title { font-size: clamp(1.7rem, 4.5vw, 2.5rem); line-height: 1.1; margin: 0; letter-spacing: -.02em; text-wrap: balance; font-weight: 800; }
+  .subtitle { color: var(--muted); margin: .6rem 0 1.3rem; max-width: 48ch; }
+  .chips { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .chip { font-size: .78rem; font-weight: 600; color: var(--muted); background: var(--surface-2); border: 1px solid var(--line); padding: .28rem .6rem; border-radius: 999px; display: inline-flex; align-items: center; gap: .4rem; }
+  .chip b { color: var(--ink); font-weight: 700; }
+
+  .progress-wrap { position: sticky; top: 0; z-index: 20; background: rgba(255,255,255,.92); backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+  .progress-inner { display: flex; align-items: center; gap: 1rem; padding: .7rem 0; }
+  .progress-label { font-size: .82rem; color: var(--muted); font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .progress-label b { color: var(--accent-ink); font-size: 1.05rem; }
+  .bar { flex: 1; height: 8px; background: var(--line); border-radius: 999px; overflow: hidden; }
+  .bar > i { display: block; height: 100%; width: 0%; background: var(--accent); border-radius: 999px; transition: width .35s ease; }
+  .reset-btn { font: inherit; font-size: .78rem; font-weight: 600; cursor: pointer; color: var(--muted); background: transparent; border: 1px solid var(--line-strong); padding: .3rem .7rem; border-radius: 7px; white-space: nowrap; }
+  .reset-btn:hover { color: var(--danger); border-color: var(--danger); }
+
+  nav.toc { margin: 2rem 0 .5rem; }
+  nav.toc h2 { font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); margin: 0 0 .8rem; }
+  .toc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: .5rem; }
+  .toc-item { display: flex; align-items: baseline; gap: .6rem; text-decoration: none; background: var(--surface); border: 1px solid var(--line); border-radius: 9px; padding: .6rem .8rem; color: var(--ink); transition: border-color .15s, transform .15s; }
+  .toc-item:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .toc-item.sec { border-left: 3px solid var(--accent); }
+  .toc-num { font-family: var(--font-mono); font-size: .8rem; color: var(--accent-ink); font-weight: 700; }
+  .toc-text { font-size: .9rem; font-weight: 600; }
+
+  main { padding-bottom: 5rem; }
+  .phase { scroll-margin-top: 4.5rem; margin-top: 2.6rem; }
+  .phase-head { display: flex; align-items: center; gap: .9rem; margin-bottom: .3rem; padding-bottom: .7rem; border-bottom: 2px solid var(--line-strong); }
+  .phase-num { flex: none; font-family: var(--font-mono); font-weight: 700; font-size: .95rem; color: var(--surface); background: var(--accent); width: 2.1rem; height: 2.1rem; border-radius: 8px; display: grid; place-items: center; }
+  .phase.secure .phase-num { background: var(--accent-ink); }
+  .phase-head h2 { font-size: 1.35rem; margin: 0; letter-spacing: -.01em; }
+  .phase-intro { color: var(--muted); margin: .7rem 0 1.1rem; }
+
+  ol.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .7rem; }
+  li.step { background: var(--surface); border: 1px solid var(--line); border-radius: 11px; padding: .9rem 1rem; transition: border-color .15s; }
+  li.step:hover { border-color: var(--line-strong); }
+  .step-row { display: flex; gap: .75rem; align-items: flex-start; }
+  .step-row input[type=checkbox] { appearance: none; -webkit-appearance: none; flex: none; cursor: pointer; width: 1.35rem; height: 1.35rem; margin: .1rem 0 0; border: 2px solid var(--line-strong); border-radius: 6px; background: var(--surface); display: grid; place-content: center; transition: background .15s, border-color .15s; }
+  .step-row input[type=checkbox]::before { content: ""; width: .7rem; height: .7rem; transform: scale(0); transition: transform .12s ease; box-shadow: inset 1rem 1rem var(--surface); clip-path: polygon(14% 44%, 0 65%, 40% 100%, 100% 16%, 82% 0%, 38% 68%); }
+  .step-row input[type=checkbox]:checked { background: var(--accent); border-color: var(--accent); }
+  .step-row input[type=checkbox]:checked::before { transform: scale(1); }
+  .step-label { font-weight: 600; cursor: pointer; }
+  .step:has(input:checked) { background: var(--surface-2); border-color: var(--line); }
+  .step:has(input:checked) .step-label { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line-strong); }
+  .step-body { margin: .6rem 0 0 2.1rem; }
+  .step-body > *:first-child { margin-top: 0; }
+  .step-body p { margin: .5rem 0; color: var(--muted); font-size: .95rem; }
+  .step-body ul { margin: .5rem 0; padding-left: 1.1rem; color: var(--muted); font-size: .95rem; }
+  .step-body li { margin: .25rem 0; }
+  code.inline { font-family: var(--font-mono); font-size: .86em; background: var(--surface-2); border: 1px solid var(--line); padding: .08em .38em; border-radius: 5px; color: var(--accent-ink); }
+  .step:has(input:checked) .step-body { opacity: .62; }
+
+  kbd { font-family: var(--font-mono); font-size: .82em; background: #fff; border: 1px solid var(--line-strong); border-bottom-width: 2px; border-radius: 5px; padding: .05em .4em; color: var(--ink); }
+
+  .cmd { position: relative; margin: .7rem 0; }
+  .cmd pre { margin: 0; background: var(--code-bg); color: var(--code-ink); border-radius: 10px; padding: .85rem 3.2rem .85rem 1rem; overflow-x: auto; font-family: var(--font-mono); font-size: .84rem; line-height: 1.65; border: 1px solid var(--code-line); }
+  .cmd pre .c { color: var(--code-faint); }
+  .copy-btn { position: absolute; top: .5rem; right: .5rem; font: inherit; font-size: .72rem; font-weight: 600; cursor: pointer; color: var(--code-ink); background: #1c2733; border: 1px solid var(--code-line); padding: .28rem .55rem; border-radius: 6px; transition: background .15s, color .15s; }
+  .copy-btn:hover { background: #26333f; }
+  .copy-btn.done { color: #7fe0c4; border-color: #2f5148; }
+
+  .note { border-radius: 10px; padding: .8rem 1rem; margin: .7rem 0; font-size: .92rem; border: 1px solid; }
+  .note p { margin: .35rem 0; }
+  .note p:first-child { margin-top: 0; }
+  .note p:last-child { margin-bottom: 0; }
+  .note .tag { font-weight: 800; letter-spacing: .04em; text-transform: uppercase; font-size: .7rem; }
+  .note.danger { background: var(--danger-soft); border-color: #eaa; color: #5f1418; }
+  .note.danger .tag { color: var(--danger); }
+  .note.warn { background: var(--warn-soft); border-color: #e6c9a6; color: #6b431a; }
+  .note.warn .tag { color: var(--warn); }
+  .note.info { background: var(--accent-soft); border-color: #a9d4cc; color: #0c4b45; }
+  .note.info .tag { color: var(--accent-ink); }
+  .note code.inline { background: rgba(255,255,255,.55); border-color: rgba(0,0,0,.08); }
+
+  footer { border-top: 1px solid var(--line); color: var(--faint); font-size: .85rem; padding: 2rem 0 3rem; }
+
+  @media (max-width: 640px) {
+    body { font-size: 16px; }
+    .step-body { margin-left: 0; }
+    .progress-label b { font-size: 1rem; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+  html { scroll-behavior: smooth; }
+</style>
+</head>
+<body>
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Guida operativa · end-to-end</p>
+    <h1 class="title">Installazione Media Server v2</h1>
+    <p class="subtitle">Da Debian allo stack Docker v2 completo: hardening, transcoding, backup cifrato su cloud e accensione da telefono. Un passo alla volta.</p>
+    <div class="chips">
+      <span class="chip">🖥️ <b>Beelink EQR6</b></span>
+      <span class="chip">Radeon <b>660M</b> · VAAPI</span>
+      <span class="chip"><b>Debian</b> headless</span>
+      <span class="chip">🛡️ <b>Hardening</b></span>
+      <span class="chip">☁️ <b>Backup</b></span>
+      <span class="chip">📱 <b>Wake-on-LAN</b></span>
+    </div>
+  </div>
+</header>
+
+<div class="progress-wrap">
+  <div class="wrap progress-inner">
+    <span class="progress-label"><b id="pct">0%</b> · <span id="count">0 / 0</span></span>
+    <div class="bar"><i id="barfill"></i></div>
+    <button class="reset-btn" id="reset" type="button">Azzera</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <nav class="toc" aria-label="Indice delle fasi">
+    <h2>Le 18 fasi</h2>
+    <div class="toc-grid">
+      <a class="toc-item" href="#f0"><span class="toc-num">00</span><span class="toc-text">Prima di iniziare</span></a>
+      <a class="toc-item" href="#f1"><span class="toc-num">01</span><span class="toc-text">Scaricare Debian</span></a>
+      <a class="toc-item" href="#f2"><span class="toc-num">02</span><span class="toc-text">Chiavetta USB avviabile</span></a>
+      <a class="toc-item" href="#f3"><span class="toc-num">03</span><span class="toc-text">BIOS, avvio USB, WoL</span></a>
+      <a class="toc-item" href="#f4"><span class="toc-num">04</span><span class="toc-text">Installazione Debian</span></a>
+      <a class="toc-item" href="#f5"><span class="toc-num">05</span><span class="toc-text">Primo accesso e IP fisso</span></a>
+      <a class="toc-item" href="#f6"><span class="toc-num">06</span><span class="toc-text">Aggiornamenti e firmware</span></a>
+      <a class="toc-item sec" href="#f7"><span class="toc-num">07</span><span class="toc-text">🛡️ Accesso SSH a chiave</span></a>
+      <a class="toc-item sec" href="#f8"><span class="toc-num">08</span><span class="toc-text">🛡️ Firewall, Fail2ban, UPnP</span></a>
+      <a class="toc-item sec" href="#f9"><span class="toc-num">09</span><span class="toc-text">🛡️ Auto-update e ottimizzazioni</span></a>
+      <a class="toc-item" href="#f10"><span class="toc-num">10</span><span class="toc-text">Installare Docker</span></a>
+      <a class="toc-item" href="#f11"><span class="toc-num">11</span><span class="toc-text">Driver VAAPI (transcoding)</span></a>
+      <a class="toc-item" href="#f12"><span class="toc-num">12</span><span class="toc-text">Preparare lo storage</span></a>
+      <a class="toc-item" href="#f13"><span class="toc-num">13</span><span class="toc-text">Scaricare e configurare la v2</span></a>
+      <a class="toc-item" href="#f14"><span class="toc-num">14</span><span class="toc-text">Configurare le app</span></a>
+      <a class="toc-item sec" href="#f15"><span class="toc-num">15</span><span class="toc-text">☁️ Backup su cloud</span></a>
+      <a class="toc-item sec" href="#f16"><span class="toc-num">16</span><span class="toc-text">📱 Accensione da telefono</span></a>
+      <a class="toc-item" href="#f17"><span class="toc-num">17</span><span class="toc-text">Verifica finale</span></a>
+    </div>
+  </nav>
+</div>
+
+<main class="wrap">
+
+  <!-- FASE 0 -->
+  <section class="phase" id="f0">
+    <div class="phase-head"><span class="phase-num">00</span><h2>Prima di iniziare</h2></div>
+    <p class="phase-intro">Cosa procurarti e — soprattutto — cosa salvare prima di formattare.</p>
+    <div class="note danger">
+      <p><span class="tag">⚠ Attenzione ai dati</span></p>
+      <p>Riformattare <b>cancella tutto il disco di sistema</b>. Se i tuoi film e serie sono sul disco interno, <b>copiali altrove prima</b>. Se stanno su un <b>disco dedicato</b>, durante il partizionamento (Fase 04) fai attenzione a <b>non selezionarlo</b>.</p>
+    </div>
+    <ol class="steps">
+      <li class="step"><div class="step-row"><input type="checkbox" id="s0-1"><label class="step-label" for="s0-1">Backup dei media esistenti (se sul disco interno) su un disco esterno</label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s0-2"><label class="step-label" for="s0-2">Chiavetta USB da almeno 2 GB (verrà cancellata)</label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s0-3"><label class="step-label" for="s0-3">Un secondo PC per scaricare Debian e creare la USB</label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s0-4"><label class="step-label" for="s0-4">Monitor + tastiera USB per l'installazione (poi lavorerai via SSH)</label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s0-5"><label class="step-label" for="s0-5">Cavo Ethernet al router (necessario anche per il Wake-on-LAN)</label></div></li>
+    </ol>
+  </section>
+
+  <!-- FASE 1 -->
+  <section class="phase" id="f1">
+    <div class="phase-head"><span class="phase-num">01</span><h2>Scaricare Debian</h2></div>
+    <p class="phase-intro">Serve l'immagine <b>con firmware incluso</b>: senza, il Wi-Fi Intel AX200 e la grafica AMD potrebbero non funzionare durante l'installazione.</p>
+    <ol class="steps">
+      <li class="step"><div class="step-row"><input type="checkbox" id="s1-1"><label class="step-label" for="s1-1">Scarica l'immagine netinst di Debian stable «with firmware»</label>
+        <div class="step-body">
+          <div class="cmd"><pre>https://cdimage.debian.org/images/unofficial/non-free/images-including-firmware/</pre><button class="copy-btn" type="button">Copia</button></div>
+          <p>Entra nell'ultima versione stabile → <code class="inline">amd64/iso-cd/</code> → scarica il file <code class="inline">…-netinst.iso</code>.</p>
+        </div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s1-2"><label class="step-label" for="s1-2">(Opzionale) Verifica l'hash con <code class="inline">SHA256SUMS</code> nella stessa cartella</label></div></li>
+    </ol>
+  </section>
+
+  <!-- FASE 2 -->
+  <section class="phase" id="f2">
+    <div class="phase-head"><span class="phase-num">02</span><h2>Chiavetta USB avviabile</h2></div>
+    <p class="phase-intro">Il modo più semplice e a prova di errore, uguale su Windows, Mac e Linux.</p>
+    <ol class="steps">
+      <li class="step"><div class="step-row"><input type="checkbox" id="s2-1"><label class="step-label" for="s2-1">Scarica e installa balenaEtcher</label>
+        <div class="step-body"><div class="cmd"><pre>https://etcher.balena.io</pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s2-2"><label class="step-label" for="s2-2">Scrivi la ISO sulla USB con Etcher</label>
+        <div class="step-body"><p><b>Flash from file</b> → la ISO → <b>Select target</b> → la chiavetta → <b>Flash</b>.</p></div></div></li>
+    </ol>
+  </section>
+
+  <!-- FASE 3 -->
+  <section class="phase" id="f3">
+    <div class="phase-head"><span class="phase-num">03</span><h2>BIOS, avvio da USB e Wake-on-LAN</h2></div>
+    <p class="phase-intro">Si fa una volta sola, con monitor e tastiera collegati. Approfittane per abilitare il Wake-on-LAN mentre sei nel BIOS.</p>
+    <ol class="steps">
+      <li class="step"><div class="step-row"><input type="checkbox" id="s3-1"><label class="step-label" for="s3-1">Accendi premendo ripetutamente <kbd>Canc</kbd> o <kbd>F7</kbd></label>
+        <div class="step-body"><p><kbd>Canc</kbd> apre il BIOS, <kbd>F7</kbd> il menù di avvio rapido.</p></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s3-2"><label class="step-label" for="s3-2">Disabilita <b>Secure Boot</b></label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s3-3"><label class="step-label" for="s3-3">Abilita <b>Power On by PCI-E / Wake-on-LAN</b> (e disabilita «ErP/Deep Sleep» se c'è)</label>
+        <div class="step-body"><p>Serve per accendere il server dal telefono (Fase 16). Il WoL richiede la <b>rete via cavo</b>.</p></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s3-4"><label class="step-label" for="s3-4">Avvia dalla chiavetta (voce UEFI col nome della USB)</label></div></li>
+    </ol>
+  </section>
+
+  <!-- FASE 4 -->
+  <section class="phase" id="f4">
+    <div class="phase-head"><span class="phase-num">04</span><h2>Installazione Debian (senza desktop)</h2></div>
+    <p class="phase-intro">Obiettivo: un sistema <b>headless</b>, solo SSH. Leggero e stabile.</p>
+    <ol class="steps">
+      <li class="step"><div class="step-row"><input type="checkbox" id="s4-1"><label class="step-label" for="s4-1">«Graphical install», lingua/tastiera Italiano</label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s4-2"><label class="step-label" for="s4-2">Hostname <code class="inline">mediaserver</code>, dominio vuoto</label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s4-3"><label class="step-label" for="s4-3">Password di root <b>vuota</b>, poi crea il tuo utente con password robusta</label>
+        <div class="step-body"><div class="note info"><p><span class="tag">Perché</span></p><p>Root vuota → Debian configura <code class="inline">sudo</code> per il tuo utente. È già l'account amministrativo dedicato delle routine da VPS.</p></div></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s4-4"><label class="step-label" for="s4-4">Partizionamento: «Guidato — usa l'intero disco» sull'SSD di sistema</label>
+        <div class="step-body"><div class="note danger"><p><span class="tag">⚠ Disco giusto</span></p><p>Se vedi un secondo disco con i media, <b>non sceglierlo</b>. Schema: «Tutti i file in una partizione».</p></div></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s4-5"><label class="step-label" for="s4-5">«Selezione software»: DESELEZIONA il desktop, tieni solo «SSH server» + utilità standard</label>
+        <div class="step-body"><p><kbd>spazio</kbd> per spuntare/togliere. Via «Debian desktop environment» e «GNOME».</p></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s4-6"><label class="step-label" for="s4-6">Installa GRUB sull'SSD, riavvia, rimuovi la USB</label></div></li>
+    </ol>
+  </section>
+
+  <!-- FASE 5 -->
+  <section class="phase" id="f5">
+    <div class="phase-head"><span class="phase-num">05</span><h2>Primo accesso e IP fisso</h2></div>
+    <p class="phase-intro">Da qui scolleghi il monitor e lavori via SSH dal portatile.</p>
+    <ol class="steps">
+      <li class="step"><div class="step-row"><input type="checkbox" id="s5-1"><label class="step-label" for="s5-1">Trova IP e MAC</label>
+        <div class="step-body"><div class="cmd"><pre>ip -4 addr show scope global
+ip link    <span class="c"># annota il MAC: ti serve per WoL e prenotazione DHCP</span></pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s5-2"><label class="step-label" for="s5-2">Prenotazione DHCP nel router (IP fisso)</label>
+        <div class="step-body"><p>Associa l'IP al MAC del mini PC. Sarà il tuo <code class="inline">SERVER_IP</code>.</p></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s5-3"><label class="step-label" for="s5-3">Collegati via SSH</label>
+        <div class="step-body"><div class="cmd"><pre>ssh <span class="c">TUO_UTENTE</span>@<span class="c">IP_DEL_MINIPC</span></pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
+    </ol>
+  </section>
+
+  <!-- FASE 6 -->
+  <section class="phase" id="f6">
+    <div class="phase-head"><span class="phase-num">06</span><h2>Aggiornamenti e firmware</h2></div>
+    <p class="phase-intro">Sistema aggiornato, firmware AMD/Wi-Fi, strumenti base.</p>
+    <ol class="steps">
+      <li class="step"><div class="step-row"><input type="checkbox" id="s6-1"><label class="step-label" for="s6-1">Aggiorna il sistema</label>
+        <div class="step-body"><div class="cmd"><pre>sudo apt update &amp;&amp; sudo apt full-upgrade -y</pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s6-2"><label class="step-label" for="s6-2">Firmware GPU AMD, microcodice e strumenti base</label>
+        <div class="step-body"><div class="cmd"><pre>sudo apt install -y firmware-amd-graphics amd64-microcode \
+  curl git ca-certificates</pre><button class="copy-btn" type="button">Copia</button></div>
+          <div class="note warn"><p><span class="tag">Se «package not found»</span></p><div class="cmd"><pre>sudo sed -i 's/ main$/ main non-free-firmware/' /etc/apt/sources.list
+sudo apt update</pre><button class="copy-btn" type="button">Copia</button></div></div></div></div></li>
+    </ol>
+  </section>
+
+  <!-- FASE 7 -->
+  <section class="phase secure" id="f7">
+    <div class="phase-head"><span class="phase-num">07</span><h2>🛡️ Blindare l'accesso SSH</h2></div>
+    <p class="phase-intro">La misura che conta di più: dall'accesso con password a quello con chiave.</p>
+    <div class="note info"><p><span class="tag">Modello di rischio</span></p><p>Server in <b>LAN dietro NAT</b>: finché non fai port-forwarding, da internet non entra nessuno — il router è il firewall vero. L'hardening è difesa in profondità. <b>Regola d'oro: mai inoltrare le porte dei servizi sul router.</b></p></div>
+    <ol class="steps">
+      <li class="step"><div class="step-row"><input type="checkbox" id="s7-1"><label class="step-label" for="s7-1">Sul portatile: genera una chiave e copiala sul server</label>
+        <div class="step-body"><div class="cmd"><pre>ssh-keygen -t ed25519 -C "mediaserver"
+ssh-copy-id <span class="c">TUO_UTENTE</span>@<span class="c">IP_DEL_MINIPC</span></pre><button class="copy-btn" type="button">Copia</button></div><p>Verifica di entrare <b>senza</b> password.</p></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s7-2"><label class="step-label" for="s7-2">Sul server: disabilita root e password</label>
+        <div class="step-body"><div class="note danger"><p><span class="tag">⚠ Non chiuderti fuori</span></p><p>Solo <b>dopo</b> aver verificato il login con chiave; tieni aperta una seconda sessione.</p></div>
+          <div class="cmd"><pre>sudo tee /etc/ssh/sshd_config.d/99-hardening.conf &gt;/dev/null &lt;&lt;'EOF'
+PermitRootLogin no
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+EOF
+sudo systemctl restart ssh</pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
+    </ol>
+  </section>
+
+  <!-- FASE 8 -->
+  <section class="phase secure" id="f8">
+    <div class="phase-head"><span class="phase-num">08</span><h2>🛡️ Firewall, Fail2ban e router</h2></div>
+    <p class="phase-intro">Chiudi tutto ciò che non serve; lascia passare solo la LAN; blinda il router.</p>
+    <ol class="steps">
+      <li class="step"><div class="step-row"><input type="checkbox" id="s8-1"><label class="step-label" for="s8-1">Firewall ufw, aperto solo alla LAN</label>
+        <div class="step-body"><div class="cmd"><pre>sudo apt install -y ufw
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow from 192.168.1.0/24 to any port 22 proto tcp   <span class="c"># adatta la subnet</span>
+sudo ufw enable</pre><button class="copy-btn" type="button">Copia</button></div>
+          <div class="note warn"><p><span class="tag">Docker aggira ufw</span></p><p>Le porte pubblicate dai container sono aperte in iptables e ufw non le filtra. Va bene: le vuoi in LAN, il router le tiene fuori da internet.</p></div></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s8-2"><label class="step-label" for="s8-2">Fail2ban sulla jail SSH</label>
+        <div class="step-body"><div class="cmd"><pre>sudo apt install -y fail2ban
+sudo tee /etc/fail2ban/jail.local &gt;/dev/null &lt;&lt;'EOF'
+[sshd]
+enabled  = true
+backend  = systemd
+maxretry = 5
+findtime = 10m
+bantime  = 1h
+EOF
+sudo systemctl enable --now fail2ban</pre><button class="copy-btn" type="button">Copia</button></div>
+          <div class="note info"><p><span class="tag">Onestamente</span></p><p>Con l'accesso a sola chiave il brute-force è già impossibile: Fail2ban qui è «cintura + bretelle».</p></div></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s8-3"><label class="step-label" for="s8-3">Sul router: disattiva UPnP e verifica zero port-forward</label>
+        <div class="step-body"><p>È ciò che impedisce l'esposizione accidentale su internet. I servizi non hanno login: restano al sicuro finché sono raggiungibili <b>solo dalla LAN</b>.</p></div></div></li>
+    </ol>
+  </section>
+
+  <!-- FASE 9 -->
+  <section class="phase secure" id="f9">
+    <div class="phase-head"><span class="phase-num">09</span><h2>🛡️ Auto-update e ottimizzazioni</h2></div>
+    <p class="phase-intro">Aggiornamenti di sicurezza automatici e qualche ritocco.</p>
+    <ol class="steps">
+      <li class="step"><div class="step-row"><input type="checkbox" id="s9-1"><label class="step-label" for="s9-1">Aggiornamenti di sicurezza automatici</label>
+        <div class="step-body"><div class="cmd"><pre>sudo apt install -y unattended-upgrades
+sudo dpkg-reconfigure -plow unattended-upgrades</pre><button class="copy-btn" type="button">Copia</button></div><p>Riavvio automatico disattivato di default: la macchina non si riavvia da sola mentre guardi.</p></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s9-2"><label class="step-label" for="s9-2">Cap ai log e ottimizzazioni SSD/RAM</label>
+        <div class="step-body"><div class="cmd"><pre>sudo mkdir -p /etc/systemd/journald.conf.d
+printf '[Journal]\nSystemMaxUse=200M\n' | sudo tee /etc/systemd/journald.conf.d/size.conf
+sudo systemctl restart systemd-journald
+sudo systemctl enable --now fstrim.timer
+echo 'vm.swappiness=10' | sudo tee /etc/sysctl.d/99-swappiness.conf
+sudo sysctl --system</pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
+    </ol>
+  </section>
+
+  <!-- FASE 10 -->
+  <section class="phase" id="f10">
+    <div class="phase-head"><span class="phase-num">10</span><h2>Installare Docker</h2></div>
+    <p class="phase-intro">Dal repository ufficiale Docker, con rotazione dei log.</p>
+    <ol class="steps">
+      <li class="step"><div class="step-row"><input type="checkbox" id="s10-1"><label class="step-label" for="s10-1">Chiave e repository ufficiale Docker</label>
+        <div class="step-body"><div class="cmd"><pre>sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/debian/gpg \
+  -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] \
+https://download.docker.com/linux/debian $(. /etc/os-release &amp;&amp; echo "$VERSION_CODENAME") stable" \
+| sudo tee /etc/apt/sources.list.d/docker.list &gt; /dev/null</pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s10-2"><label class="step-label" for="s10-2">Installa Engine + plugin Compose</label>
+        <div class="step-body"><div class="cmd"><pre>sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io \
+  docker-buildx-plugin docker-compose-plugin</pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s10-3"><label class="step-label" for="s10-3">Rotazione dei log dei container</label>
+        <div class="step-body"><div class="cmd"><pre>sudo tee /etc/docker/daemon.json &gt;/dev/null &lt;&lt;'EOF'
+{
+  "log-driver": "json-file",
+  "log-opts": { "max-size": "10m", "max-file": "3" }
+}
+EOF
+sudo systemctl restart docker</pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s10-4"><label class="step-label" for="s10-4">Docker senza sudo e verifica</label>
+        <div class="step-body"><div class="cmd"><pre>sudo usermod -aG docker $USER
+<span class="c"># esci e rientra, poi:</span>
+docker run --rm hello-world</pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
+    </ol>
+  </section>
+
+  <!-- FASE 11 -->
+  <section class="phase" id="f11">
+    <div class="phase-head"><span class="phase-num">11</span><h2>Driver VAAPI (transcoding)</h2></div>
+    <p class="phase-intro">Per far transcodificare Jellyfin con la GPU Radeon 660M. Raccogli i due GID che serviranno.</p>
+    <ol class="steps">
+      <li class="step"><div class="step-row"><input type="checkbox" id="s11-1"><label class="step-label" for="s11-1">Installa driver VAAPI e strumento di verifica</label>
+        <div class="step-body"><div class="cmd"><pre>sudo apt install -y mesa-va-drivers vainfo
+sudo usermod -aG render,video $USER   <span class="c"># poi esci e rientra</span></pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s11-2"><label class="step-label" for="s11-2">Verifica l'accelerazione</label>
+        <div class="step-body"><div class="cmd"><pre>vainfo --display drm --device /dev/dri/renderD128</pre><button class="copy-btn" type="button">Copia</button></div><p>Devi vedere profili <code class="inline">VAProfileH264…</code> / <code class="inline">VAProfileHEVC…</code>.</p></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s11-3"><label class="step-label" for="s11-3">Annota i GID di <code class="inline">render</code> e <code class="inline">docker</code></label>
+        <div class="step-body"><div class="cmd"><pre>getent group render    <span class="c"># -&gt; RENDER_GID</span>
+getent group docker    <span class="c"># -&gt; DOCKER_GID</span></pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
+    </ol>
+  </section>
+
+  <!-- FASE 12 -->
+  <section class="phase" id="f12">
+    <div class="phase-head"><span class="phase-num">12</span><h2>Preparare lo storage (disco esterno)</h2></div>
+    <p class="phase-intro">I media stanno su un disco esterno in <code class="inline">/mnt/media</code>. Root unica sullo stesso disco = hardlink.</p>
+    <ol class="steps">
+      <li class="step"><div class="step-row"><input type="checkbox" id="s12-1"><label class="step-label" for="s12-1">Identifica il disco e, se serve, formattalo ext4</label>
+        <div class="step-body"><div class="cmd"><pre>lsblk -f    <span class="c"># trova il device (es. /dev/sda1) e il filesystem</span></pre><button class="copy-btn" type="button">Copia</button></div>
+          <div class="note warn"><p><span class="tag">ext4 obbligatorio</span></p><p>exFAT <b>non supporta gli hardlink</b>, NTFS gestisce male i permessi. Se non è ext4 va formattato — <b>salva prima i dati</b>.</p></div>
+          <div class="cmd"><pre>sudo mkfs.ext4 -L media /dev/sdX1   <span class="c"># il TUO device — cancella il disco!</span></pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s12-2"><label class="step-label" for="s12-2">Monta in modo persistente (fstab via UUID)</label>
+        <div class="step-body"><div class="cmd"><pre>sudo mkdir -p /mnt/media
+UUID=$(sudo blkid -s UUID -o value /dev/sdX1)
+echo "UUID=$UUID  /mnt/media  ext4  defaults,nofail,x-systemd.device-timeout=10  0  2" \
+  | sudo tee -a /etc/fstab
+sudo mount -a</pre><button class="copy-btn" type="button">Copia</button></div>
+          <div class="note info"><p><span class="tag">Tienilo collegato</span></p><p>Se all'avvio non è montato, i container scriverebbero nella cartella vuota sull'SSD.</p></div></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s12-3"><label class="step-label" for="s12-3">Crea le cartelle a root unica</label>
+        <div class="step-body"><div class="cmd"><pre>sudo mkdir -p /mnt/media/torrents/{movies,tv} \
+             /mnt/media/media/{movies,tv}
+sudo chown -R $USER:$USER /mnt/media</pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
+    </ol>
+  </section>
+
+  <!-- FASE 13 -->
+  <section class="phase" id="f13">
+    <div class="phase-head"><span class="phase-num">13</span><h2>Scaricare e configurare la v2</h2></div>
+    <p class="phase-intro">Cloni il repository, compili <code class="inline">.env</code> e attivi il transcoding.</p>
+    <ol class="steps">
+      <li class="step"><div class="step-row"><input type="checkbox" id="s13-1"><label class="step-label" for="s13-1">Clona il repo e passa al branch v2</label>
+        <div class="step-body"><div class="cmd"><pre>git clone https://github.com/giacomorossi-dev/media-server.git
+cd media-server
+git checkout v2</pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s13-2"><label class="step-label" for="s13-2">Crea <code class="inline">.env</code> e leggi i tuoi ID</label>
+        <div class="step-body"><div class="cmd"><pre>cp .env.example .env
+id -u    <span class="c"># -&gt; PUID</span>
+id -g    <span class="c"># -&gt; PGID</span></pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s13-3"><label class="step-label" for="s13-3">Compila <code class="inline">.env</code></label>
+        <div class="step-body"><div class="cmd"><pre>TZ=Europe/Rome
+PUID=<span class="c">id -u (di solito 1000)</span>
+PGID=<span class="c">id -g (di solito 1000)</span>
+MEDIA_ROOT=/mnt/media
+SERVER_IP=<span class="c">IP fisso del mini PC</span>
+HOMEPAGE_ALLOWED_HOSTS=<span class="c">IP</span>:3000
+RENDER_GID=<span class="c">dalla Fase 11</span>
+DOCKER_GID=<span class="c">dalla Fase 11</span></pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s13-4"><label class="step-label" for="s13-4">Attiva il transcoding nel compose</label>
+        <div class="step-body"><p><code class="inline">nano docker-compose.yml</code>, blocco <b>jellyfin</b>, togli il <code class="inline">#</code> da:</p>
+          <div class="cmd"><pre>    devices:
+      - /dev/dri:/dev/dri
+    group_add:
+      - "${RENDER_GID}"</pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s13-5"><label class="step-label" for="s13-5">Avvia lo stack</label>
+        <div class="step-body"><div class="cmd"><pre>docker compose up -d
+docker compose ps</pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
+    </ol>
+  </section>
+
+  <!-- FASE 14 -->
+  <section class="phase" id="f14">
+    <div class="phase-head"><span class="phase-num">14</span><h2>Configurare le app</h2></div>
+    <p class="phase-intro">Dal browser, una volta sola. Apri ogni servizio a <code class="inline">http://IP:PORTA</code>.</p>
+    <div class="cmd" style="margin-bottom:1rem"><pre style="padding-right:1rem">Homepage 3000 · Jellyfin 8096 · Radarr 7878 · Sonarr 8989
+Prowlarr 9696 · Bazarr 6767 · qBittorrent 8080 · Backup 8082</pre></div>
+    <div class="note info"><p><span class="tag">Collegamenti tra servizi</span></p><p>Quando un'app parla con un'altra, usa il nome del container (<code class="inline">mediaserver-radarr</code>…), non l'IP.</p></div>
+    <ol class="steps">
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14-1"><label class="step-label" for="s14-1">qBittorrent (:8080) — password, percorso, categorie</label>
+        <div class="step-body"><div class="cmd"><pre>docker logs mediaserver-qbittorrent | grep -i password</pre><button class="copy-btn" type="button">Copia</button></div>
+          <ul><li>Salvataggio: <code class="inline">/data/torrents</code></li><li>Categorie <code class="inline">movies</code>→<code class="inline">/data/torrents/movies</code>, <code class="inline">tv</code>→<code class="inline">/data/torrents/tv</code></li></ul></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14-2"><label class="step-label" for="s14-2">Prowlarr (:9696) — indexer + collega Radarr/Sonarr</label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14-3"><label class="step-label" for="s14-3">Radarr (:7878) — root <code class="inline">/data/media/movies</code>, client qBittorrent cat. <code class="inline">movies</code></label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14-4"><label class="step-label" for="s14-4">Sonarr (:8989) — root <code class="inline">/data/media/tv</code>, client cat. <code class="inline">tv</code></label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14-5"><label class="step-label" for="s14-5">Bazarr (:6767) — collega Radarr/Sonarr, lingue sottotitoli</label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14-6"><label class="step-label" for="s14-6">Jellyfin (:8096) — librerie + transcoding VAAPI</label>
+        <div class="step-body"><ul><li>Librerie: Film → <code class="inline">/data/media/movies</code>, Serie → <code class="inline">/data/media/tv</code></li><li>Dashboard → Playback → Hardware acceleration = <b>VAAPI</b>, device <code class="inline">/dev/dri/renderD128</code> (non «Quick Sync»)</li></ul></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14-7"><label class="step-label" for="s14-7">Homepage — API key nel <code class="inline">.env</code>, poi <code class="inline">docker compose up -d homepage</code></label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14-8"><label class="step-label" for="s14-8">qBittorrent — limita il seeding (ratio 1.0 / 60 min → Pause)</label></div></li>
+    </ol>
+  </section>
+
+  <!-- FASE 15 — BACKUP -->
+  <section class="phase secure" id="f15">
+    <div class="phase-head"><span class="phase-num">15</span><h2>☁️ Backup su cloud</h2></div>
+    <p class="phase-intro">Backup cifrato dei config su Cloudflare R2, che parte all'accensione ed è visibile in Homepage. Dettagli in <code class="inline">BACKUP.md</code>.</p>
+    <ol class="steps">
+      <li class="step"><div class="step-row"><input type="checkbox" id="s15-1"><label class="step-label" for="s15-1">Crea bucket R2 + token su Cloudflare</label>
+        <div class="step-body"><p><a href="https://dash.cloudflare.com" target="_blank">dash.cloudflare.com</a> → R2 → crea bucket <code class="inline">mediaserver-backup</code>; poi «Manage API Tokens» → token con <b>Object Read &amp; Write</b>. Annota Access Key, Secret ed endpoint <code class="inline">https://&lt;ACCOUNT_ID&gt;.r2.cloudflarestorage.com</code>.</p></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s15-2"><label class="step-label" for="s15-2">Installa restic e crea il file credenziali</label>
+        <div class="step-body"><div class="cmd"><pre>sudo apt install -y restic
+openssl rand -base64 24    <span class="c"># genera la passphrase di cifratura</span>
+sudo tee /etc/mediaserver-backup.env &gt;/dev/null &lt;&lt;'EOF'
+export RESTIC_REPOSITORY="s3:https://&lt;ACCOUNT_ID&gt;.r2.cloudflarestorage.com/mediaserver-backup"
+export RESTIC_PASSWORD="LA_PASSPHRASE"
+export AWS_ACCESS_KEY_ID="R2_ACCESS_KEY_ID"
+export AWS_SECRET_ACCESS_KEY="R2_SECRET_ACCESS_KEY"
+EOF
+sudo chmod 600 /etc/mediaserver-backup.env</pre><button class="copy-btn" type="button">Copia</button></div>
+          <div class="note danger"><p><span class="tag">🔑 Passphrase</span></p><p>Salvala in un password manager, <b>separata dal server</b>: senza, i backup cifrati sono irrecuperabili.</p></div></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s15-3"><label class="step-label" for="s15-3">Primo backup e verifica</label>
+        <div class="step-body"><div class="cmd"><pre>sudo ./scripts/backup-config.sh
+source /etc/mediaserver-backup.env &amp;&amp; restic snapshots</pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s15-4"><label class="step-label" for="s15-4">Automatizzalo all'accensione (timer systemd)</label>
+        <div class="step-body"><div class="cmd"><pre>sudo tee /etc/systemd/system/mediaserver-backup.service &gt;/dev/null &lt;&lt;EOF
+[Unit]
+Description=Backup config media server (restic)
+After=network-online.target docker.service
+Wants=network-online.target
+[Service]
+Type=oneshot
+ExecStart=$(pwd)/scripts/backup-config.sh
+EOF
+sudo tee /etc/systemd/system/mediaserver-backup.timer &gt;/dev/null &lt;&lt;'EOF'
+[Unit]
+Description=Backup config all'accensione
+[Timer]
+OnBootSec=5min
+[Install]
+WantedBy=timers.target
+EOF
+sudo systemctl daemon-reload
+sudo systemctl enable --now mediaserver-backup.timer</pre><button class="copy-btn" type="button">Copia</button></div>
+          <div class="note info"><p><span class="tag">Guardia</span></p><p>Lo script salta se l'ultimo backup riuscito è &lt; 20h: più accensioni al giorno = un solo backup.</p></div></div></div></li>
+    </ol>
+  </section>
+
+  <!-- FASE 16 — WoL -->
+  <section class="phase secure" id="f16">
+    <div class="phase-head"><span class="phase-num">16</span><h2>📱 Accensione da telefono</h2></div>
+    <p class="phase-intro">Accendi con il Wake-on-LAN (BIOS già fatto alla Fase 03) e spegni via SSH.</p>
+    <ol class="steps">
+      <li class="step"><div class="step-row"><input type="checkbox" id="s16-1"><label class="step-label" for="s16-1">Rendi persistente il WoL sulla scheda di rete</label>
+        <div class="step-body"><div class="cmd"><pre>sudo apt install -y ethtool
+IFACE=$(ip -o -4 route show default | awk '{print $5}')
+sudo tee /etc/systemd/system/wol.service &gt;/dev/null &lt;&lt;EOF
+[Unit]
+Description=Abilita Wake-on-LAN su $IFACE
+After=network-online.target
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/ethtool -s $IFACE wol g
+[Install]
+WantedBy=multi-user.target
+EOF
+sudo systemctl enable --now wol.service</pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s16-2"><label class="step-label" for="s16-2">Spegnimento senza password (per l'app SSH)</label>
+        <div class="step-body"><div class="cmd"><pre>echo "$USER ALL=(root) NOPASSWD: /usr/bin/systemctl poweroff" | sudo tee /etc/sudoers.d/poweroff
+sudo chmod 0440 /etc/sudoers.d/poweroff</pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s16-3"><label class="step-label" for="s16-3">Sul telefono: app WoL (accende) + app SSH (spegne)</label>
+        <div class="step-body"><ul><li>App «Wake on LAN»: magic packet al <b>MAC</b> del server.</li><li>App SSH (Termius/JuiceSSH, con chiave): comando salvato <code class="inline">sudo systemctl poweroff</code>.</li></ul></div></div></li>
+    </ol>
+  </section>
+
+  <!-- FASE 17 -->
+  <section class="phase" id="f17">
+    <div class="phase-head"><span class="phase-num">17</span><h2>Verifica finale</h2></div>
+    <p class="phase-intro">Il collaudo end-to-end.</p>
+    <ol class="steps">
+      <li class="step"><div class="step-row"><input type="checkbox" id="s17-1"><label class="step-label" for="s17-1">Dalla TV: app Jellyfin → <code class="inline">http://IP:8096</code>, riproduci qualcosa</label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s17-2"><label class="step-label" for="s17-2">Transcoding HW attivo</label>
+        <div class="step-body"><p>Durante una riproduzione che converte, Jellyfin → Dashboard → Activity mostra <b>Transcoding (hw)</b> / <code class="inline">VAAPI</code>. Verifica anche che giri non-root:</p><div class="cmd"><pre>docker exec mediaserver-jellyfin id   <span class="c"># uid = il tuo PUID, non 0</span></pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s17-3"><label class="step-label" for="s17-3">Homepage (:3000) — widget popolati + card Backup con esito</label>
+        <div class="step-body"><p>La card <b>Backup</b> mostra l'ultimo esito; il clic apre <code class="inline">http://IP:8082</code> con lo storico.</p></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s17-4"><label class="step-label" for="s17-4">Backup: simula un errore e controlla che risulti FAIL</label>
+        <div class="step-body"><p>Es. con credenziali errate → <code class="inline">status.json</code> riporta FAIL e la card diventa rossa. Poi ripristina le credenziali giuste.</p></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s17-5"><label class="step-label" for="s17-5">Da telefono: WoL accende → dopo ~5 min parte il backup → spegnimento via SSH</label>
+        <div class="step-body"><div class="cmd"><pre>journalctl -u mediaserver-backup.service   <span class="c"># log del backup post-boot</span></pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
+    </ol>
+
+    <div class="note info" style="margin-top:1.4rem"><p><span class="tag">Uso quotidiano</span></p><p>Finito. Accendi (anche da telefono) → i container ripartono da soli e il backup gira → guardi → spegni. Rilanci <code class="inline">docker compose up -d</code> solo dopo aver cambiato configurazione o versioni.</p></div>
+  </section>
+
+</main>
+
+<footer class="wrap">
+  <p>Media Server v2 · Beelink EQR6 · Debian + Docker, con hardening, backup e Wake-on-LAN. I progressi restano salvati in questo browser.</p>
+</footer>
+
+<script>
+  (function () {
+    var KEY = "msv2-install-v3";
+    var boxes = Array.prototype.slice.call(document.querySelectorAll('input[type=checkbox]'));
+    var pctEl = document.getElementById('pct');
+    var countEl = document.getElementById('count');
+    var fillEl = document.getElementById('barfill');
+
+    function load() {
+      var saved = {};
+      try { saved = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) {}
+      boxes.forEach(function (b) { if (saved[b.id]) b.checked = true; });
+    }
+    function save() {
+      var state = {};
+      boxes.forEach(function (b) { if (b.checked) state[b.id] = 1; });
+      try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+    }
+    function update() {
+      var done = boxes.filter(function (b) { return b.checked; }).length;
+      var total = boxes.length;
+      var pct = total ? Math.round(done / total * 100) : 0;
+      pctEl.textContent = pct + '%';
+      countEl.textContent = done + ' / ' + total;
+      fillEl.style.width = pct + '%';
+    }
+
+    load();
+    update();
+    boxes.forEach(function (b) { b.addEventListener('change', function () { save(); update(); }); });
+    document.getElementById('reset').addEventListener('click', function () {
+      boxes.forEach(function (b) { b.checked = false; });
+      save(); update();
+    });
+
+    document.querySelectorAll('.copy-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var pre = btn.parentElement.querySelector('pre');
+        var text = pre ? pre.innerText : '';
+        function ok() {
+          btn.textContent = 'Copiato ✓';
+          btn.classList.add('done');
+          setTimeout(function () { btn.textContent = 'Copia'; btn.classList.remove('done'); }, 1400);
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(ok, function () {});
+        } else {
+          var ta = document.createElement('textarea');
+          ta.value = text; document.body.appendChild(ta); ta.select();
+          try { document.execCommand('copy'); ok(); } catch (e) {}
+          document.body.removeChild(ta);
+        }
+      });
+    });
+  })();
+</script>
+</body>
+</html>
