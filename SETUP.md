@@ -18,9 +18,14 @@ la **migrazione dei dati** vedi il [README](./README.md).
 
 ## 1. Installazione Debian (headless)
 
-1. Scarica l'immagine **netinst con firmware incluso** (serve per Wi-Fi/GPU):
-   <https://cdimage.debian.org/images/unofficial/non-free/images-including-firmware/>
-2. Scrivi la ISO su una USB con [balenaEtcher](https://etcher.balena.io).
+1. Scarica l'immagine **netinst ufficiale** di Debian stable da <https://www.debian.org/download>
+   (link diretto: <https://cdimage.debian.org/debian-cd/current/amd64/iso-cd/> →
+   `debian-<versione>-amd64-netinst.iso`). Da Debian 12 in poi **include già il firmware
+   non-free** (Wi-Fi AX200 / GPU AMD), quindi non serve nessuna immagine "unofficial".
+   Verifica l'hash con lo `SHA256SUMS` nella stessa cartella.
+2. Scrivi la ISO su USB. **Su Fedora, senza installare nulla:** apri *Dischi* (GNOME) →
+   *"Ripristina immagine disco…"* → scegli la ISO. In alternativa `dd`, oppure
+   [balenaEtcher](https://etcher.balena.io) (cross-piattaforma).
 3. Nel BIOS del Beelink (<kbd>Canc</kbd>/<kbd>F7</kbd>): disabilita Secure Boot, avvia da USB.
 4. Durante l'installazione:
    - lingua/tastiera Italiano, hostname `mediaserver`
