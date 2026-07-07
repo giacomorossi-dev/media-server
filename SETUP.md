@@ -310,6 +310,22 @@ sudo chown -R $USER:$USER /mnt/media
 > `sudo smartctl -H /dev/sdX` per un check rapido della salute (i media non li salviamo,
 > ma sapere che il disco sta morendo è comodo).
 
+**Disco USB che va in standby.** Molti box USB (es. Inateck/ASMedia) mettono l'HDD in
+standby e impiegano qualche secondo al risveglio: al boot il mount potrebbe non essere
+pronto quando parte Docker, che finirebbe per scrivere sull'SSD. Alza il timeout di
+risveglio e fai **dipendere Docker dal mount** di `/mnt/media`:
+
+```bash
+sudo sed -i 's/x-systemd.device-timeout=10/x-systemd.device-timeout=30/' /etc/fstab
+sudo mkdir -p /etc/systemd/system/docker.service.d
+printf '[Unit]\nRequiresMountsFor=/mnt/media\n' | \
+  sudo tee /etc/systemd/system/docker.service.d/require-media.conf
+sudo systemctl daemon-reload
+```
+
+Così Docker attende il montaggio di `/mnt/media`; se il disco manca, i container non
+partono (meglio che scrivere sull'SSD).
+
 ## 8. Deploy dello stack v2
 
 ```bash

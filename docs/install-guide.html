@@ -516,6 +516,13 @@ DOCKER_GID=<span class="c">dalla Fase 11</span></pre><button class="copy-btn" ty
       - /dev/dri:/dev/dri
     group_add:
       - "${RENDER_GID}"</pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s13-6"><label class="step-label" for="s13-6">Robustezza mount USB (se il disco va in standby)</label>
+        <div class="step-body"><p>I box USB mettono l'HDD in standby: così Docker parte <b>solo dopo</b> il mount di <code class="inline">/mnt/media</code> e non scrive mai sull'SSD.</p>
+          <div class="cmd"><pre>sudo sed -i 's/x-systemd.device-timeout=10/x-systemd.device-timeout=30/' /etc/fstab
+sudo mkdir -p /etc/systemd/system/docker.service.d
+printf '[Unit]\nRequiresMountsFor=/mnt/media\n' | \
+  sudo tee /etc/systemd/system/docker.service.d/require-media.conf
+sudo systemctl daemon-reload</pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
       <li class="step"><div class="step-row"><input type="checkbox" id="s13-5"><label class="step-label" for="s13-5">Avvia lo stack</label>
         <div class="step-body"><div class="cmd"><pre>docker compose up -d
 docker compose ps</pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
