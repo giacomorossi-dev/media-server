@@ -112,7 +112,8 @@ ip link show enp2s0           # annota il MAC per la prenotazione
 Poi fai la **prenotazione DHCP sul MAC dell'Ethernet** (stesso IP). Nella lista dispositivi
 del router vedrai **due voci `mediaserver`** (Wi-Fi + Ethernet, stesso hostname): scegli
 quella **Ethernet**, riconoscibile dal MAC/IP. Infine, verificato che l'SSH sull'IP Ethernet
-funziona: `sudo rfkill block wifi`.
+funziona, spegni il Wi-Fi: `sudo apt install -y rfkill && sudo rfkill block wifi`
+(anche `rfkill` non è preinstallato sul sistema minimale).
 
 ## 3. Aggiornamenti e firmware
 
