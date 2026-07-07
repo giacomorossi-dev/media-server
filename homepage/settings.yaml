@@ -12,3 +12,6 @@ layout:
   Download:
     style: row
     columns: 1
+  Sistema:
+    style: row
+    columns: 1

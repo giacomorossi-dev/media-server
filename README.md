@@ -166,6 +166,12 @@ La configurazione si fa **una volta sola**. Dopo, grazie a `restart: unless-stop
 Rilanci `docker compose up -d` **solo** quando cambi la configurazione (`.env`,
 `docker-compose.yml`, file di `homepage/`) o aggiorni le versioni delle immagini.
 
+## Backup
+
+Le configurazioni delle app (volumi `*-config`) vanno salvate **cifrate su cloud** con
+`scripts/backup-config.sh` (restic → Cloudflare R2 o Google Drive). Procedura completa:
+**[BACKUP.md](./BACKUP.md)**.
+
 ## Comandi utili
 
 ```bash

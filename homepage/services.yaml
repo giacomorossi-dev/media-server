@@ -66,3 +66,10 @@
           url: http://mediaserver-qbittorrent:8080
           username: "{{HOMEPAGE_VAR_QBIT_USER}}"
           password: "{{HOMEPAGE_VAR_QBIT_PASS}}"
+
+- Sistema:
+    - Backup (Cloudflare R2):
+        icon: mdi-cloud-upload
+        href: https://dash.cloudflare.com/?to=/:account/r2
+        description: Backup cifrato dei config · stato via "restic snapshots"
+        target: _blank
