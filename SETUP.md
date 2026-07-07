@@ -115,6 +115,10 @@ quella **Ethernet**, riconoscibile dal MAC/IP. Infine, verificato che l'SSH sull
 funziona, spegni il Wi-Fi: `sudo apt install -y rfkill && sudo rfkill block wifi`
 (anche `rfkill` non è preinstallato sul sistema minimale).
 
+> **Test connettività:** su alcune reti l'ICMP verso internet è filtrato, quindi
+> `ping 8.8.8.8` può fallire *anche con internet funzionante*. Verifica con
+> `curl -sI https://deb.debian.org` (deve tornare una riga `HTTP/...`), non con `ping`.
+
 ## 3. Aggiornamenti e firmware
 
 ```bash

@@ -309,6 +309,7 @@ printf '\nallow-hotplug enp2s0\niface enp2s0 inet dhcp\n' | sudo tee -a /etc/net
 sudo ifup enp2s0
 ip -4 addr show enp2s0</pre><button class="copy-btn" type="button">Copia</button></div>
       <p><b>Debian 13:</b> se manca <code class="inline">dhclient</code> («comando non trovato»): <code class="inline">sudo apt install -y isc-dhcp-client</code>, poi <code class="inline">sudo ifdown enp2s0; sudo ifup enp2s0</code>. Nel router compaiono <b>due voci «mediaserver»</b> (Wi-Fi + Ethernet): prenota quella <b>Ethernet</b> (dal MAC/IP). Verificato l'SSH sull'IP cablato, spegni il Wi-Fi: <code class="inline">sudo apt install -y rfkill &amp;&amp; sudo rfkill block wifi</code> (anche <code class="inline">rfkill</code> non è preinstallato).</p>
+      <p><b>Test connettività:</b> su alcune reti l'ICMP è filtrato, quindi <code class="inline">ping 8.8.8.8</code> può fallire anche con internet ok. Verifica con <code class="inline">curl -sI https://deb.debian.org</code> (deve tornare <code class="inline">HTTP/...</code>), non con <code class="inline">ping</code>.</p>
     </div>
   </section>
 
