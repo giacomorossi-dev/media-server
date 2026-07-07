@@ -90,6 +90,11 @@
   .app-h .port { font-family: var(--font-mono); font-size: .76rem; font-weight: 600; color: var(--accent-ink); background: var(--accent-soft); padding: .12rem .45rem; border-radius: 5px; }
   .app-h .role { font-size: .82rem; font-weight: 500; color: var(--faint); }
 
+  ol.flow { margin: .4rem 0 1.2rem; padding-left: 1.4rem; }
+  ol.flow li { margin: .35rem 0; color: var(--ink); }
+  ol.flow li::marker { color: var(--accent-ink); font-weight: 700; }
+  .phase.usage .phase-num { background: var(--ink); }
+
   ol.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .7rem; }
   li.step { background: var(--surface); border: 1px solid var(--line); border-radius: 11px; padding: .9rem 1rem; transition: border-color .15s; }
   li.step:hover { border-color: var(--line-strong); }
@@ -189,6 +194,7 @@
       <a class="toc-item sec" href="#f15"><span class="toc-num">15</span><span class="toc-text">☁️ Backup su cloud</span></a>
       <a class="toc-item sec" href="#f16"><span class="toc-num">16</span><span class="toc-text">📱 Accensione da telefono</span></a>
       <a class="toc-item" href="#f17"><span class="toc-num">17</span><span class="toc-text">Verifica finale</span></a>
+      <a class="toc-item" href="#uso"><span class="toc-num">▶</span><span class="toc-text">Uso: aggiungere film/serie</span></a>
     </div>
   </nav>
 </div>
@@ -731,6 +737,35 @@ sudo chmod 0440 /etc/sudoers.d/poweroff</pre><button class="copy-btn" type="butt
     </ol>
 
     <div class="note info" style="margin-top:1.4rem"><p><span class="tag">Uso quotidiano</span></p><p>Finito. Accendi (anche da telefono) → i container ripartono da soli e il backup gira → guardi → spegni con <code class="inline">sudo systemctl poweroff</code> (arresto pulito: i container si fermano bene). Rilanci <code class="inline">docker compose up -d</code> solo dopo aver cambiato configurazione o versioni.</p></div>
+  </section>
+
+  <!-- USO -->
+  <section class="phase usage" id="uso">
+    <div class="phase-head"><span class="phase-num">▶</span><h2>Come aggiungere film e serie</h2></div>
+    <p class="phase-intro">Il flusso quotidiano, dalla ricerca alla riproduzione. Vale ogni volta che vuoi un nuovo contenuto (non è un passo d'installazione).</p>
+
+    <h3 class="app-h">Un film <span class="role">· Radarr → Jellyfin</span></h3>
+    <ol class="flow">
+      <li>In <b>Radarr</b> (<code class="inline">:7878</code>): <i>Movies → Add New</i> (o il «+»).</li>
+      <li>Cerca il <b>titolo</b>, seleziona quello giusto (controlla anno/poster).</li>
+      <li>Imposta: <b>Root Folder</b> <code class="inline">/data/media/movies</code>, <b>Quality Profile</b> (es. HD-1080p), <b>Monitor</b> = «Movie Only».</li>
+      <li>Spunta <b>«Start search for missing movie»</b> (o «Search on add») → <b>Add</b>.</li>
+      <li>Radarr cerca sugli indexer (Prowlarr), sceglie un release e lo manda a <b>qBittorrent</b> (categoria <code class="inline">movies</code>).</li>
+      <li>A download finito, Radarr <b>importa via hardlink</b> in <code class="inline">/data/media/movies/…</code> e rinomina. <b>Bazarr</b> aggancia i sottotitoli.</li>
+      <li><b>Jellyfin</b> rileva il film (real-time monitoring) → lo trovi in libreria sulla TV.</li>
+    </ol>
+    <div class="note info"><p><span class="tag">Se non parte da solo</span></p><p>Radarr → apri il film → <b>Search</b> (icona lente) → «Interactive Search» → scegli un release dalla lista e scaricalo a mano. Utile anche se l'automatico prende un file scadente. Lo stato dei download è in <i>Activity/Queue</i> di Radarr e in qBittorrent.</p></div>
+
+    <h3 class="app-h">Una serie TV <span class="role">· Sonarr → Jellyfin</span></h3>
+    <ol class="flow">
+      <li>In <b>Sonarr</b> (<code class="inline">:8989</code>): <i>Series → Add New</i>.</li>
+      <li>Cerca il <b>titolo</b> della serie, selezionala.</li>
+      <li>Imposta: <b>Root Folder</b> <code class="inline">/data/media/tv</code>, <b>Quality Profile</b>, <b>Monitor</b> (es. «All Episodes» o solo alcune stagioni), <b>Series Type</b> = Standard.</li>
+      <li>Spunta <b>«Start search for missing episodes»</b> → <b>Add</b>.</li>
+      <li>Sonarr cerca gli episodi monitorati → qBittorrent (categoria <code class="inline">tv</code>) → scarica → <b>importa</b> in <code class="inline">/data/media/tv/Serie/Season X/</code>. Bazarr → sottotitoli.</li>
+      <li><b>Jellyfin</b> mostra la serie/episodi sulla TV.</li>
+    </ol>
+    <div class="note warn"><p><span class="tag">On-demand: episodi nuovi</span></p><p>Sonarr scarica i nuovi episodi <b>solo quando il mini PC è acceso</b>. Con l'uso on-demand: quando accendi, Sonarr fa una ricerca e recupera ciò che manca; per forzare, apri la serie → <b>Search</b> sugli episodi mancanti. (Se un domani vuoi il download notturno automatico serve tenerlo acceso / Wake-on-LAN schedulato.)</p></div>
   </section>
 
 </main>
