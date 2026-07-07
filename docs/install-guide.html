@@ -560,6 +560,14 @@ Prowlarr 9696 · Bazarr 6767 · qBittorrent 8080 · Backup 8082</pre></div>
       <li class="step"><div class="step-row"><input type="checkbox" id="s14p-3"><label class="step-label" for="s14p-3">Aggiungi gli indexer (<i>Indexers → Add Indexer</i> → Test → Save)</label></div></li>
       <li class="step"><div class="step-row"><input type="checkbox" id="s14p-4"><label class="step-label" for="s14p-4">Collega Radarr: <i>Settings → Apps → +</i> → <code class="inline">http://mediaserver-radarr:7878</code> + API key di Radarr</label></div></li>
       <li class="step"><div class="step-row"><input type="checkbox" id="s14p-5"><label class="step-label" for="s14p-5">Collega Sonarr: <code class="inline">http://mediaserver-sonarr:8989</code> + API key di Sonarr</label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14p-6"><label class="step-label" for="s14p-6">Indexer bloccato da Cloudflare? Collega FlareSolverr</label>
+        <div class="step-body"><p>Se il Test di un indexer pubblico dà «blocked by CloudFlare» (tipico di 1337x): il container <code class="inline">flaresolverr</code> è già nel compose (fai <code class="inline">git pull &amp;&amp; docker compose up -d</code> se l'hai aggiunto ora).</p>
+          <ul>
+            <li><i>Settings → Indexers → Indexer Proxies → + → FlareSolverr</i></li>
+            <li>Host: <code class="inline">http://mediaserver-flaresolverr:8191</code>; Tag: es. <code class="inline">cloudflare</code> → Save</li>
+            <li>Apri l'indexer (es. 1337x) → aggiungi lo <b>stesso Tag</b> <code class="inline">cloudflare</code> → Save → ri-Test</li>
+          </ul>
+          <p>Se un sito resta bloccato anche con FlareSolverr, sostituisci l'immagine con <code class="inline">ghcr.io/thephaseless/byparr:latest</code> (drop-in).</p></div></div></li>
     </ol>
 
     <h3 class="app-h">Radarr <span class="port">:7878</span> <span class="role">· film</span></h3>

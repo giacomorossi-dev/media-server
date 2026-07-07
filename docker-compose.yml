@@ -76,6 +76,21 @@ services:
     networks:
       - mediaserver-network
 
+  # Risolve il "Cloudflare challenge" per gli indexer pubblici protetti (es. 1337x).
+  # In Prowlarr: Settings > Indexers > Indexer Proxies > FlareSolverr,
+  #   Host = http://mediaserver-flaresolverr:8191, poi aggiungi il Tag all'indexer.
+  # Se un sito non si sblocca, sostituisci l'immagine con ghcr.io/thephaseless/byparr:latest
+  # (drop-in: stessa porta 8191 e stessa configurazione in Prowlarr).
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:v3.5.0
+    container_name: mediaserver-flaresolverr
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Europe/Rome}
+      LOG_LEVEL: info
+    networks:
+      - mediaserver-network
+
   radarr:
     image: lscr.io/linuxserver/radarr:6.2.1
     container_name: mediaserver-radarr
