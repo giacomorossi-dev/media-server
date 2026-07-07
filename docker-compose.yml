@@ -76,18 +76,19 @@ services:
     networks:
       - mediaserver-network
 
-  # Risolve il "Cloudflare challenge" per gli indexer pubblici protetti (es. 1337x).
+  # Bypass del "Cloudflare challenge" per indexer pubblici protetti (es. 1337x).
+  # Byparr = drop-in di FlareSolverr (stessa API su :8191) ma più efficace sui siti
+  # "induriti" dove FlareSolverr fallisce (HTTP 500). Tag 'latest' voluto: un tool
+  # anti-Cloudflare deve restare aggiornato.
   # In Prowlarr: Settings > Indexers > Indexer Proxies > FlareSolverr,
-  #   Host = http://mediaserver-flaresolverr:8191, poi aggiungi il Tag all'indexer.
-  # Se un sito non si sblocca, sostituisci l'immagine con ghcr.io/thephaseless/byparr:latest
-  # (drop-in: stessa porta 8191 e stessa configurazione in Prowlarr).
-  flaresolverr:
-    image: ghcr.io/flaresolverr/flaresolverr:v3.5.0
-    container_name: mediaserver-flaresolverr
+  #   Host = http://mediaserver-byparr:8191, poi aggiungi il Tag all'indexer.
+  byparr:
+    image: ghcr.io/thephaseless/byparr:latest
+    container_name: mediaserver-byparr
     restart: unless-stopped
     environment:
       TZ: ${TZ:-Europe/Rome}
-      LOG_LEVEL: info
+    shm_size: "1gb"
     networks:
       - mediaserver-network
 
