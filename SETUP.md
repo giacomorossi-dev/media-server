@@ -46,9 +46,29 @@ ip link                        # trova il MAC (per la prenotazione DHCP)
 ```
 
 Il comando `ip`/`ip link` qui sopra va eseguito **sul mini PC** (monitor ancora attaccato),
-oppure puoi leggere l'IP dalla lista dispositivi DHCP del router. Fissa poi l'IP con una
-**prenotazione DHCP nel router** (associa IP ↔ MAC). Da qui in poi lavori via SSH **dal
-portatile** e scolleghi monitor/tastiera:
+oppure puoi leggere l'IP dalla lista dispositivi DHCP del router.
+
+**Prenotazione DHCP (IP fisso) — procedura:**
+
+1. Dal mini PC annota **MAC** (`ip link` → `link/ether …`) e **indirizzo del router**
+   (`ip route | grep default`).
+2. Browser → indirizzo del router (es. `http://192.168.1.1`), login admin (spesso su
+   un'etichetta sul router).
+3. Sezione (il nome varia): Fritz!Box → *Rete locale → Rete → dispositivo → «Assegna
+   sempre lo stesso IPv4»*; TP-Link → *Advanced → Network → DHCP Server → Address
+   Reservation*; Netgear → *LAN Setup → Address Reservation*; router ISP → *Rete/LAN →
+   DHCP → «IP statico» / «Prenotazione indirizzi» / «Associazione IP-MAC»*.
+4. Riconosci il mini PC dall'hostname `mediaserver` o dal MAC, assegnagli l'IP fisso,
+   **Salva/Applica**.
+5. Sul mini PC: `sudo dhclient -r && sudo dhclient` (o `sudo reboot`); verifica con
+   `ip -4 addr`.
+
+> Se il router non supporta le prenotazioni, imposta l'IP statico su Debian in
+> `/etc/network/interfaces` (blocco `iface … inet static` con `address`/`gateway`/
+> `dns-nameservers`), scegliendo un IP **fuori** dal pool DHCP, poi
+> `sudo systemctl restart networking`.
+
+Da qui in poi lavori via SSH **dal portatile** e scolleghi monitor/tastiera:
 
 ```bash
 ssh TUO_UTENTE@IP_DEL_MINIPC

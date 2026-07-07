@@ -285,8 +285,17 @@ sudo dd if=debian-*-amd64-netinst.iso of=/dev/sdX bs=4M status=progress oflag=di
       <li class="step"><div class="step-row"><input type="checkbox" id="s5-1"><label class="step-label" for="s5-1">Trova IP e MAC</label>
         <div class="step-body"><div class="cmd"><pre>ip -4 addr show scope global
 ip link    <span class="c"># annota il MAC: ti serve per WoL e prenotazione DHCP</span></pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
-      <li class="step"><div class="step-row"><input type="checkbox" id="s5-2"><label class="step-label" for="s5-2">Prenotazione DHCP nel router (IP fisso)</label>
-        <div class="step-body"><p>Associa l'IP al MAC del mini PC. Sarà il tuo <code class="inline">SERVER_IP</code>.</p></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s5-2"><label class="step-label" for="s5-2">Prenotazione DHCP nel router (IP fisso) → sarà il tuo <code class="inline">SERVER_IP</code></label>
+        <div class="step-body">
+          <div class="cmd"><pre>ip route | grep default   <span class="c"># indirizzo del router, es. 192.168.1.1</span></pre><button class="copy-btn" type="button">Copia</button></div>
+          <ul>
+            <li>Browser → indirizzo del router → login admin (etichetta sul router, non la password Wi-Fi).</li>
+            <li>Sezione (varia per marca): <b>Fritz!Box</b> «Assegna sempre lo stesso IPv4»; <b>TP-Link</b> → Address Reservation; <b>Netgear</b> → Address Reservation; <b>router ISP</b> → «IP statico / Prenotazione indirizzi / Associazione IP-MAC».</li>
+            <li>Riconosci il mini PC dall'hostname <code class="inline">mediaserver</code> o dal MAC, assegna l'IP fisso, Salva.</li>
+          </ul>
+          <div class="cmd"><pre>sudo dhclient -r &amp;&amp; sudo dhclient   <span class="c"># applica il nuovo IP (oppure: sudo reboot)</span></pre><button class="copy-btn" type="button">Copia</button></div>
+          <div class="note info"><p><span class="tag">Se il router non lo permette</span></p><p>Imposta l'IP statico su Debian in <code class="inline">/etc/network/interfaces</code> (IP <b>fuori</b> dal pool DHCP), poi <code class="inline">sudo systemctl restart networking</code>.</p></div>
+        </div></div></li>
       <li class="step"><div class="step-row"><input type="checkbox" id="s5-3"><label class="step-label" for="s5-3">Collegati via SSH</label>
         <div class="step-body"><div class="cmd"><pre>ssh <span class="c">TUO_UTENTE</span>@<span class="c">IP_DEL_MINIPC</span></pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
     </ol>
