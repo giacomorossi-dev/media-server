@@ -86,6 +86,10 @@
   .phase-head h2 { font-size: 1.35rem; margin: 0; letter-spacing: -.01em; }
   .phase-intro { color: var(--muted); margin: .7rem 0 1.1rem; }
 
+  .app-h { display: flex; align-items: baseline; flex-wrap: wrap; gap: .55rem; font-size: 1.1rem; font-weight: 700; margin: 1.8rem 0 .5rem; padding-bottom: .4rem; border-bottom: 1px solid var(--line); letter-spacing: -.01em; }
+  .app-h .port { font-family: var(--font-mono); font-size: .76rem; font-weight: 600; color: var(--accent-ink); background: var(--accent-soft); padding: .12rem .45rem; border-radius: 5px; }
+  .app-h .role { font-size: .82rem; font-weight: 500; color: var(--faint); }
+
   ol.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: .7rem; }
   li.step { background: var(--surface); border: 1px solid var(--line); border-radius: 11px; padding: .9rem 1rem; transition: border-color .15s; }
   li.step:hover { border-color: var(--line-strong); }
@@ -532,22 +536,73 @@ docker compose ps</pre><button class="copy-btn" type="button">Copia</button></di
   <!-- FASE 14 -->
   <section class="phase" id="f14">
     <div class="phase-head"><span class="phase-num">14</span><h2>Configurare le app</h2></div>
-    <p class="phase-intro">Dal browser, una volta sola. Apri ogni servizio a <code class="inline">http://IP:PORTA</code>.</p>
+    <p class="phase-intro">Dal browser, una volta sola, <b>in quest'ordine</b>. <b>Ogni app al primo avvio ti fa creare un login</b> (utente+password): è normale ed è la tua sicurezza in LAN — usa password decenti e segnatele (puoi usare le stesse per i quattro *arr). Poi configuri.</p>
     <div class="cmd" style="margin-bottom:1rem"><pre style="padding-right:1rem">Homepage 3000 · Jellyfin 8096 · Radarr 7878 · Sonarr 8989
 Prowlarr 9696 · Bazarr 6767 · qBittorrent 8080 · Backup 8082</pre></div>
-    <div class="note info"><p><span class="tag">Collegamenti tra servizi</span></p><p>Quando un'app parla con un'altra, usa il nome del container (<code class="inline">mediaserver-radarr</code>…), non l'IP.</p></div>
+    <div class="note info"><p><span class="tag">Due cose che servono ovunque</span></p><p>Per collegare un'app a un'altra usa il <b>nome del container</b> (<code class="inline">mediaserver-radarr</code>…), non l'IP. L'<b>API key</b> di ogni *arr sta in <i>Settings → General → Security → API Key</i>: serve per i collegamenti e per Homepage.</p></div>
+    <h3 class="app-h">qBittorrent <span class="port">:8080</span> <span class="role">· download client</span></h3>
     <ol class="steps">
-      <li class="step"><div class="step-row"><input type="checkbox" id="s14-1"><label class="step-label" for="s14-1">qBittorrent (:8080) — password, percorso, categorie</label>
-        <div class="step-body"><div class="cmd"><pre>docker logs mediaserver-qbittorrent | grep -i password</pre><button class="copy-btn" type="button">Copia</button></div>
-          <ul><li>Salvataggio: <code class="inline">/data/torrents</code></li><li>Categorie <code class="inline">movies</code>→<code class="inline">/data/torrents/movies</code>, <code class="inline">tv</code>→<code class="inline">/data/torrents/tv</code></li></ul></div></div></li>
-      <li class="step"><div class="step-row"><input type="checkbox" id="s14-2"><label class="step-label" for="s14-2">Prowlarr (:9696) — indexer + collega Radarr/Sonarr</label></div></li>
-      <li class="step"><div class="step-row"><input type="checkbox" id="s14-3"><label class="step-label" for="s14-3">Radarr (:7878) — root <code class="inline">/data/media/movies</code>, client qBittorrent cat. <code class="inline">movies</code></label></div></li>
-      <li class="step"><div class="step-row"><input type="checkbox" id="s14-4"><label class="step-label" for="s14-4">Sonarr (:8989) — root <code class="inline">/data/media/tv</code>, client cat. <code class="inline">tv</code></label></div></li>
-      <li class="step"><div class="step-row"><input type="checkbox" id="s14-5"><label class="step-label" for="s14-5">Bazarr (:6767) — collega Radarr/Sonarr, lingue sottotitoli</label></div></li>
-      <li class="step"><div class="step-row"><input type="checkbox" id="s14-6"><label class="step-label" for="s14-6">Jellyfin (:8096) — librerie + transcoding VAAPI</label>
-        <div class="step-body"><ul><li>Librerie: Film → <code class="inline">/data/media/movies</code>, Serie → <code class="inline">/data/media/tv</code></li><li>Dashboard → Playback → Hardware acceleration = <b>VAAPI</b>, device <code class="inline">/dev/dri/renderD128</code> (non «Quick Sync»)</li></ul></div></div></li>
-      <li class="step"><div class="step-row"><input type="checkbox" id="s14-7"><label class="step-label" for="s14-7">Homepage — API key nel <code class="inline">.env</code>, poi <code class="inline">docker compose up -d homepage</code></label></div></li>
-      <li class="step"><div class="step-row"><input type="checkbox" id="s14-8"><label class="step-label" for="s14-8">qBittorrent — limita il seeding (ratio 1.0 / 60 min → Pause)</label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14q-1"><label class="step-label" for="s14q-1">Accedi con la password temporanea (utente <code class="inline">admin</code>)</label>
+        <div class="step-body"><div class="cmd"><pre>docker logs mediaserver-qbittorrent 2>&amp;1 | grep -i "temporary password"</pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14q-2"><label class="step-label" for="s14q-2">Cambia la password: <i>Tools → Options → Web UI → Authentication</i></label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14q-3"><label class="step-label" for="s14q-3">Percorso salvataggio predefinito <code class="inline">/data/torrents</code> (<i>Options → Downloads</i>)</label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14q-4"><label class="step-label" for="s14q-4">Crea categoria <code class="inline">movies</code> → <code class="inline">/data/torrents/movies</code> (tasto destro su <i>Categories</i> → Add)</label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14q-5"><label class="step-label" for="s14q-5">Crea categoria <code class="inline">tv</code> → <code class="inline">/data/torrents/tv</code></label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14q-6"><label class="step-label" for="s14q-6">Limita il seeding: <i>Options → BitTorrent → Seeding Limits</i> (ratio <code class="inline">1.0</code> o <code class="inline">60</code> min → azione <b>Pause</b>)</label></div></li>
+    </ol>
+
+    <h3 class="app-h">Prowlarr <span class="port">:9696</span> <span class="role">· indexer</span></h3>
+    <ol class="steps">
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14p-1"><label class="step-label" for="s14p-1">Crea utente + password al primo avvio</label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14p-2"><label class="step-label" for="s14p-2">Copia la tua API key (<i>Settings → General → API Key</i>)</label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14p-3"><label class="step-label" for="s14p-3">Aggiungi gli indexer (<i>Indexers → Add Indexer</i> → Test → Save)</label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14p-4"><label class="step-label" for="s14p-4">Collega Radarr: <i>Settings → Apps → +</i> → <code class="inline">http://mediaserver-radarr:7878</code> + API key di Radarr</label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14p-5"><label class="step-label" for="s14p-5">Collega Sonarr: <code class="inline">http://mediaserver-sonarr:8989</code> + API key di Sonarr</label></div></li>
+    </ol>
+
+    <h3 class="app-h">Radarr <span class="port">:7878</span> <span class="role">· film</span></h3>
+    <ol class="steps">
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14r-1"><label class="step-label" for="s14r-1">Crea utente + password al primo avvio</label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14r-2"><label class="step-label" for="s14r-2">Copia l'API key (<i>Settings → General → API Key</i>) — serve a Prowlarr, Bazarr, Homepage</label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14r-3"><label class="step-label" for="s14r-3">Root folder <code class="inline">/data/media/movies</code> (<i>Settings → Media Management → Root Folders</i>)</label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14r-4"><label class="step-label" for="s14r-4">Download client (<i>Settings → Download Clients → + → qBittorrent</i>): host <code class="inline">mediaserver-qbittorrent</code>, porta <code class="inline">8080</code>, utente/pass di qBit, categoria <code class="inline">movies</code> → Test → Save</label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14r-5"><label class="step-label" for="s14r-5">(Opzionale) profili qualità / naming secondo le TRaSH Guides</label></div></li>
+    </ol>
+
+    <h3 class="app-h">Sonarr <span class="port">:8989</span> <span class="role">· serie TV</span></h3>
+    <ol class="steps">
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14s-1"><label class="step-label" for="s14s-1">Crea utente + password al primo avvio</label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14s-2"><label class="step-label" for="s14s-2">Copia l'API key (<i>Settings → General → API Key</i>)</label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14s-3"><label class="step-label" for="s14s-3">Root folder <code class="inline">/data/media/tv</code></label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14s-4"><label class="step-label" for="s14s-4">Download client qBittorrent (<code class="inline">mediaserver-qbittorrent:8080</code>) categoria <code class="inline">tv</code> → Test → Save</label></div></li>
+    </ol>
+
+    <h3 class="app-h">Bazarr <span class="port">:6767</span> <span class="role">· sottotitoli</span></h3>
+    <ol class="steps">
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14b-1"><label class="step-label" for="s14b-1">Crea utente + password al primo avvio</label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14b-2"><label class="step-label" for="s14b-2"><i>Settings → Radarr</i>: host <code class="inline">mediaserver-radarr</code>, porta <code class="inline">7878</code>, API key → Test → Save</label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14b-3"><label class="step-label" for="s14b-3"><i>Settings → Sonarr</i>: host <code class="inline">mediaserver-sonarr</code>, porta <code class="inline">8989</code>, API key → Test → Save</label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14b-4"><label class="step-label" for="s14b-4"><i>Settings → Languages</i>: aggiungi le lingue (es. Italiano) e crea un <i>Languages Profile</i></label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14b-5"><label class="step-label" for="s14b-5"><i>Settings → Providers</i>: abilita almeno un provider (es. OpenSubtitles — richiede un account)</label></div></li>
+    </ol>
+
+    <h3 class="app-h">Jellyfin <span class="port">:8096</span> <span class="role">· riproduzione</span></h3>
+    <ol class="steps">
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14j-1"><label class="step-label" for="s14j-1">Wizard: lingua → crea l'utente <b>admin</b> (utente + password)</label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14j-2"><label class="step-label" for="s14j-2">Aggiungi libreria <i>Film</i> (Movies) → <code class="inline">/data/media/movies</code></label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14j-3"><label class="step-label" for="s14j-3">Aggiungi libreria <i>Serie TV</i> (Shows) → <code class="inline">/data/media/tv</code></label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14j-4"><label class="step-label" for="s14j-4">Completa il wizard e accedi</label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14j-5"><label class="step-label" for="s14j-5"><i>Dashboard → Playback</i>: Hardware acceleration = <b>VAAPI</b>, device <code class="inline">/dev/dri/renderD128</code> (non «Quick Sync»)</label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14j-6"><label class="step-label" for="s14j-6">Crea un'API key (<i>Dashboard → Advanced → API Keys</i>) — serve a Homepage</label></div></li>
+    </ol>
+
+    <h3 class="app-h">Homepage <span class="port">:3000</span> <span class="role">· dashboard</span></h3>
+    <ol class="steps">
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14h-1"><label class="step-label" for="s14h-1">Raccogli le API key di tutte le app (dai passi sopra) + la password di qBittorrent</label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14h-2"><label class="step-label" for="s14h-2">Mettile nel <code class="inline">.env</code> (<code class="inline">nano .env</code>): <code class="inline">JELLYFIN_API_KEY</code>, <code class="inline">RADARR_API_KEY</code>, <code class="inline">SONARR_API_KEY</code>, <code class="inline">PROWLARR_API_KEY</code>, <code class="inline">BAZARR_API_KEY</code>, <code class="inline">QBIT_PASS</code></label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14h-3"><label class="step-label" for="s14h-3">Ricarica Homepage</label>
+        <div class="step-body"><div class="cmd"><pre>docker compose up -d homepage</pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14h-4"><label class="step-label" for="s14h-4">Verifica su <code class="inline">http://IP:3000</code> che i widget si popolino</label></div></li>
     </ol>
   </section>
 
