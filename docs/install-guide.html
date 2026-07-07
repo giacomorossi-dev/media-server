@@ -619,7 +619,14 @@ Prowlarr 9696 · Bazarr 6767 · qBittorrent 8080 · Backup 8082</pre></div>
         <div class="step-body"><div class="note info"><p><span class="tag">Solo 3 cose contano</span></p><p>Nell'aggiunta libreria (tante opzioni): <b>1)</b> Content type = <b>Movies</b> (o Shows per le serie) — se sbagli tipo non riconosce i metadati; <b>2)</b> la <b>cartella</b> giusta; <b>3)</b> opzionale <i>Preferred metadata language / Country</i> = <b>Italiano / Italia</b> per titoli e trame in IT. <b>Tutto il resto lascialo al default</b> (metadata/image fetchers, real-time monitoring, trickplay, ecc.).</p></div></div></div></li>
       <li class="step"><div class="step-row"><input type="checkbox" id="s14j-3"><label class="step-label" for="s14j-3">Aggiungi libreria <b>Serie TV</b>: Content type = <b>Shows</b>, cartella <code class="inline">/data/media/tv</code> (stesse regole di sopra)</label></div></li>
       <li class="step"><div class="step-row"><input type="checkbox" id="s14j-4"><label class="step-label" for="s14j-4">Completa il wizard e accedi</label></div></li>
-      <li class="step"><div class="step-row"><input type="checkbox" id="s14j-5"><label class="step-label" for="s14j-5"><i>Dashboard → Playback</i>: Hardware acceleration = <b>VAAPI</b>, device <code class="inline">/dev/dri/renderD128</code> (non «Quick Sync»)</label></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s14j-5"><label class="step-label" for="s14j-5">Transcoding HW: <i>Dashboard → Riproduzione → Transcodifica</i></label>
+        <div class="step-body"><ul>
+            <li><b>Accelerazione hardware</b> = <b>VA-API</b> (non «Quick Sync», che è Intel)</li>
+            <li><b>Dispositivo VA-API</b> = <code class="inline">/dev/dri/renderD128</code></li>
+            <li><b>Enable hardware decoding for</b>: spunta i codec che la 660M decodifica → <b>H264, HEVC (+10-bit), VP9 (+10-bit), AV1</b>. Se lasci vuoto, il decode resta su CPU.</li>
+            <li>Verifica che <b>Enable hardware encoding</b> sia attivo. <b>Salva</b> in fondo.</li>
+          </ul>
+          <div class="note info"><p><span class="tag">Note AMD</span></p><p>Le opzioni <b>«VPP Tone mapping»</b> sono Intel-only: lasciale spente. Se un codec desse artefatti/schermo verde, togli la sua spunta (cade in software solo per quello). VA-API assente nella tendina? <code class="inline">docker compose exec jellyfin ls /dev/dri</code> deve mostrare <code class="inline">renderD128</code>.</p></div></div></div></li>
       <li class="step"><div class="step-row"><input type="checkbox" id="s14j-6"><label class="step-label" for="s14j-6">Crea un'API key (<i>Dashboard → Advanced → API Keys</i>) — serve a Homepage</label></div></li>
     </ol>
 
