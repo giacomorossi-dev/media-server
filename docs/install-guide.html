@@ -299,7 +299,17 @@ ip link    <span class="c"># annota il MAC: ti serve per WoL e prenotazione DHCP
       <li class="step"><div class="step-row"><input type="checkbox" id="s5-3"><label class="step-label" for="s5-3">Collegati via SSH</label>
         <div class="step-body"><div class="cmd"><pre>ssh <span class="c">TUO_UTENTE</span>@<span class="c">IP_DEL_MINIPC</span></pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
     </ol>
-    <div class="note info"><p><span class="tag">Wi-Fi → Ethernet (consigliato)</span></p><p>Cavo e Wi-Fi hanno MAC diversi: se passi a Ethernet rifai la prenotazione DHCP per il MAC cablato, assegnandogli lo <b>stesso IP</b> (così non tocchi <code class="inline">.env</code>). Il <b>Wake-on-LAN funziona solo su cavo</b> → fai la Fase 16 dopo il passaggio. Lo stack Docker non cambia. <b>Qualsiasi presa Ethernet di casa va bene</b>, purché sulla stessa rete (non una ospiti/VLAN separata): l'IP prenotato segue il dispositivo, non la presa.</p></div>
+    <div class="note info"><p><span class="tag">Wi-Fi → Ethernet (consigliato)</span></p><p>Cavo e Wi-Fi hanno MAC diversi: passando a Ethernet rifai la prenotazione DHCP per il MAC cablato, assegnandogli lo <b>stesso IP</b> (così non tocchi <code class="inline">.env</code>). Il <b>Wake-on-LAN funziona solo su cavo</b> → Fase 16 dopo il passaggio. Lo stack Docker non cambia. Qualsiasi presa Ethernet della stessa rete va bene (l'IP segue il dispositivo, non la presa).</p>
+      <p>Le porte Ethernet non sono preconfigurate (headless): vanno alzate e configurate.</p>
+      <div class="cmd"><pre>sudo apt install -y ethtool
+for i in $(ls /sys/class/net | grep -E '^e'); do sudo ip link set "$i" up; done
+for i in $(ls /sys/class/net | grep -E '^e'); do echo -n "$i: "; sudo ethtool "$i" 2&gt;/dev/null | grep -i "link detected"; done
+# configura quella con "yes" (es. enp2s0):
+printf '\nallow-hotplug enp2s0\niface enp2s0 inet dhcp\n' | sudo tee -a /etc/network/interfaces
+sudo ifup enp2s0
+ip -4 addr show enp2s0</pre><button class="copy-btn" type="button">Copia</button></div>
+      <p><b>Debian 13:</b> se manca <code class="inline">dhclient</code> («comando non trovato»): <code class="inline">sudo apt install -y isc-dhcp-client</code>, poi <code class="inline">sudo ifdown enp2s0; sudo ifup enp2s0</code>. Nel router compaiono <b>due voci «mediaserver»</b> (Wi-Fi + Ethernet): prenota quella <b>Ethernet</b> (dal MAC/IP). Verificato l'SSH sull'IP cablato: <code class="inline">sudo rfkill block wifi</code>.</p>
+    </div>
   </section>
 
   <!-- FASE 6 -->

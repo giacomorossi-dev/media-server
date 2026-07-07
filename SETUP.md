@@ -82,6 +82,38 @@ ssh TUO_UTENTE@IP_DEL_MINIPC
 > stessa rete (non una Wi-Fi ospiti/VLAN separata): l'IP prenotato segue il dispositivo,
 > non la presa.
 
+### Passare da Wi-Fi a Ethernet (procedura)
+
+Su un'installazione headless le porte Ethernet **non sono configurate**: non basta infilare
+il cavo. Dal mini PC (o via SSH sul Wi-Fi):
+
+```bash
+# 1) alza le porte e trova quella collegata (Link detected: yes)
+sudo apt install -y ethtool
+for i in $(ls /sys/class/net | grep -E '^e'); do sudo ip link set "$i" up; done
+for i in $(ls /sys/class/net | grep -E '^e'); do echo -n "$i: "; sudo ethtool "$i" 2>/dev/null | grep -i "link detected"; done
+# 2) configura in DHCP quella collegata (es. enp2s0)
+printf '\nallow-hotplug enp2s0\niface enp2s0 inet dhcp\n' | sudo tee -a /etc/network/interfaces
+sudo ifup enp2s0
+ip -4 addr show enp2s0        # verifica IP
+ip link show enp2s0           # annota il MAC per la prenotazione
+```
+
+> **Debian 13:** se `ifup` non prende IP e `dhclient` dà «comando non trovato», installa il
+> client DHCP — deprecato ma compatibile con ifupdown e senza conflitti:
+> `sudo apt install -y isc-dhcp-client`, poi `sudo ifdown enp2s0; sudo ifup enp2s0`.
+> (Evita `dhcpcd`: parte come demone e litiga con la configurazione Wi-Fi.)
+
+> **Nessuna lucina sulla porta?** Il LED di link si accende solo con l'interfaccia "su":
+> esegui prima `sudo ip link set enpXsY up`. Se resta spenta e `ethtool` dice
+> `Link detected: no` → è il cavo/porta (riassesta il connettore, prova l'altra porta o un
+> altro cavo, verifica che la presa del router sia viva).
+
+Poi fai la **prenotazione DHCP sul MAC dell'Ethernet** (stesso IP). Nella lista dispositivi
+del router vedrai **due voci `mediaserver`** (Wi-Fi + Ethernet, stesso hostname): scegli
+quella **Ethernet**, riconoscibile dal MAC/IP. Infine, verificato che l'SSH sull'IP Ethernet
+funziona: `sudo rfkill block wifi`.
+
 ## 3. Aggiornamenti e firmware
 
 ```bash
