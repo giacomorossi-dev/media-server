@@ -669,22 +669,30 @@ sudo chmod 0440 /etc/sudoers.d/poweroff</pre><button class="copy-btn" type="butt
       save(); update();
     });
 
+    function fallbackCopy(text) {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed'; ta.style.top = '0'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.focus(); ta.select();
+      var done = false;
+      try { done = document.execCommand('copy'); } catch (e) { done = false; }
+      document.body.removeChild(ta);
+      return done;
+    }
     document.querySelectorAll('.copy-btn').forEach(function (btn) {
       btn.addEventListener('click', function () {
         var pre = btn.parentElement.querySelector('pre');
         var text = pre ? pre.innerText : '';
-        function ok() {
-          btn.textContent = 'Copiato ✓';
-          btn.classList.add('done');
-          setTimeout(function () { btn.textContent = 'Copia'; btn.classList.remove('done'); }, 1400);
+        function flash(msg) {
+          btn.textContent = msg; btn.classList.add('done');
+          setTimeout(function () { btn.textContent = 'Copia'; btn.classList.remove('done'); }, 1500);
         }
+        function ok() { flash('Copiato ✓'); }
+        function fail() { flash(fallbackCopy(text) ? 'Copiato ✓' : 'Selez. manuale'); }
         if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(text).then(ok, function () {});
+          navigator.clipboard.writeText(text).then(ok, fail);
         } else {
-          var ta = document.createElement('textarea');
-          ta.value = text; document.body.appendChild(ta); ta.select();
-          try { document.execCommand('copy'); ok(); } catch (e) {}
-          document.body.removeChild(ta);
+          fail();
         }
       });
     });
