@@ -567,7 +567,8 @@ Prowlarr 9696 · Bazarr 6767 · qBittorrent 8080 · Backup 8082</pre></div>
             <li>Host: <code class="inline">http://mediaserver-byparr:8191</code>; Tag: es. <code class="inline">cloudflare</code> → Save</li>
             <li>Apri l'indexer (es. 1337x) → aggiungi lo <b>stesso Tag</b> <code class="inline">cloudflare</code> → Save → ri-Test</li>
           </ul>
-          <div class="note warn"><p><span class="tag">Il tag va su ENTRAMBI</span></p><p>Il tag deve stare sul <b>proxy</b> e sull'<b>indexer</b>: se è solo sul proxy resta «inutilizzato». Byparr al primo test è lento (avvia un browser). FlareSolverr è l'alternativa più leggera ma spesso fallisce (HTTP 500) sui siti duri come 1337x.</p></div></div></div></li>
+          <div class="note warn"><p><span class="tag">Il tag va su ENTRAMBI</span></p><p>Il tag deve stare sul <b>proxy</b> e sull'<b>indexer</b>: se è solo sul proxy resta «inutilizzato». Byparr al primo test è lento (avvia un browser). FlareSolverr è l'alternativa più leggera ma spesso fallisce (HTTP 500) sui siti duri come 1337x.</p></div>
+          <div class="note danger"><p><span class="tag">Blocco DNS dell'ISP (Italia)</span></p><p>Se <code class="inline">getent hosts 1337x.to</code> dà <code class="inline">127.0.0.1</code> (o Byparr logga <code class="inline">NS_ERROR_CONNECTION_REFUSED</code>), il sito è <b>bloccato dal DNS dell'ISP</b> (AGCOM/Piracy Shield) — non è Cloudflare. Per questo <code class="inline">byparr</code> e <code class="inline">qbittorrent</code> nel compose usano <code class="inline">dns: 1.1.1.1</code>, che restituisce l'IP vero e aggira il blocco. Se l'ISP bloccasse anche per IP, servirebbe una VPN.</p></div></div></div></li>
     </ol>
 
     <h3 class="app-h">Radarr <span class="port">:7878</span> <span class="role">· film</span></h3>
