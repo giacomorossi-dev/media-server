@@ -252,25 +252,95 @@ usi davvero, ogni container è superficie in più da mantenere.
   *Diun/Uptime Kuma* (notifiche/monitoraggio: inutili su una macchina spenta gran
   parte del tempo).
 
-## 10. Backup dei config (consigliato)
+## 10. Backup dei config su cloud (consigliato)
 
-I volumi `mediaserver-*-config` contengono tutte le impostazioni delle app: perderli
-significa riconfigurare tutto. Un backup periodico sullo stesso disco esterno:
+I volumi `mediaserver-*-config` contengono tutte le impostazioni delle app (comprese API
+key e credenziali): perderli significa riconfigurare tutto. Li salviamo **cifrati** su
+cloud con [restic](https://restic.net). Destinazione consigliata: **Cloudflare R2**
+(S3-compatibile, free tier 10 GB, niente costi di egress). In alternativa Google Drive.
 
 ```bash
-mkdir -p /mnt/media/backup
-docker run --rm \
-  -v /var/lib/docker/volumes:/vols:ro \
-  -v /mnt/media/backup:/out \
-  debian:stable-slim \
-  tar czf /out/config-$(date +%F).tar.gz -C /vols \
-    mediaserver-jellyfin-config mediaserver-radarr-config \
-    mediaserver-sonarr-config mediaserver-prowlarr-config \
-    mediaserver-bazarr-config mediaserver-qbittorrent-config
+sudo apt install -y restic
 ```
 
-Lancialo ogni tanto (o via cron quando la macchina è accesa). Per ripristinare, scompatti
-l'archivio nella stessa posizione a stack spento.
+### 10a. Preparare la destinazione — Cloudflare R2 (consigliato)
+
+1. Nel dashboard Cloudflare → **R2** → crea un bucket, es. `mediaserver-backup`.
+2. **R2 → Manage API Tokens** → crea un token: ottieni *Access Key ID*, *Secret Access
+   Key* e l'endpoint `https://<ACCOUNT_ID>.r2.cloudflarestorage.com`.
+
+Crea il file credenziali (fuori dal repo, leggibile solo da root):
+
+```bash
+sudo tee /etc/mediaserver-backup.env >/dev/null <<'EOF'
+export RESTIC_REPOSITORY="s3:https://<ACCOUNT_ID>.r2.cloudflarestorage.com/mediaserver-backup"
+export RESTIC_PASSWORD="UNA_PASSPHRASE_ROBUSTA_PER_LA_CIFRATURA"
+export AWS_ACCESS_KEY_ID="R2_ACCESS_KEY_ID"
+export AWS_SECRET_ACCESS_KEY="R2_SECRET_ACCESS_KEY"
+EOF
+sudo chmod 600 /etc/mediaserver-backup.env
+```
+
+> ⚠️ Annota la `RESTIC_PASSWORD` in un posto sicuro: senza quella i backup sono
+> **irrecuperabili** (sono cifrati).
+
+### 10b. Alternativa — Google Drive (via rclone)
+
+```bash
+sudo apt install -y rclone
+rclone config    # crea un remote tipo "drive"; su headless: rclone authorize da un PC con browser
+```
+
+Poi nel file credenziali usa il backend rclone invece dell'S3:
+
+```bash
+export RESTIC_REPOSITORY="rclone:drive:mediaserver-backup"
+export RESTIC_PASSWORD="UNA_PASSPHRASE_ROBUSTA"
+```
+
+### 10c. Eseguire il backup
+
+Lo script `scripts/backup-config.sh` inizializza il repo alla prima esecuzione, salva i
+volumi di config e applica la retention (7 giornalieri / 4 settimanali / 6 mensili):
+
+```bash
+sudo ./scripts/backup-config.sh
+```
+
+> È un backup «a caldo» (stack acceso): per i DB SQLite delle app va bene nella quasi
+> totalità dei casi. Per un backup 100% consistente, `docker compose stop` prima e
+> `docker compose start` dopo.
+
+### 10d. Automatizzarlo (opzionale, adatto all'on-demand)
+
+Un timer systemd con `Persistent=true` esegue il backup **al primo avvio utile** se la
+macchina era spenta all'orario previsto:
+
+```bash
+sudo tee /etc/systemd/system/mediaserver-backup.service >/dev/null <<EOF
+[Service]
+Type=oneshot
+ExecStart=$(pwd)/scripts/backup-config.sh
+EOF
+
+sudo tee /etc/systemd/system/mediaserver-backup.timer >/dev/null <<'EOF'
+[Timer]
+OnCalendar=daily
+Persistent=true
+[Install]
+WantedBy=timers.target
+EOF
+
+sudo systemctl enable --now mediaserver-backup.timer
+```
+
+### 10e. Ripristino
+
+```bash
+source /etc/mediaserver-backup.env
+restic snapshots                 # elenca i backup
+restic restore latest --target /tmp/restore   # poi copia i _data nei volumi, a stack spento
+```
 
 ---
 
