@@ -271,7 +271,6 @@ sudo usermod -aG render,video $USER      # poi esci e rientra
 vainfo --display drm --device /dev/dri/renderD128   # deve elencare VAProfileH264/HEVC
 
 getent group render   # -> RENDER_GID  (per .env)
-getent group docker   # -> DOCKER_GID  (per .env)
 ```
 
 ## 7. Disco esterno per i media
@@ -353,7 +352,7 @@ cp .env.example .env
 Con `nano .env` imposta (le cartelle e la robustezza del mount le hai già fatte in §7):
 - `PUID` / `PGID` = il tuo `id -u` / `id -g` (di solito 1000)
 - `SERVER_IP` = l'IP fisso prenotato; `HOMEPAGE_ALLOWED_HOSTS` = `IP:3000`
-- `RENDER_GID` / `DOCKER_GID` = i GID (§6/VAAPI: `getent group render` / `getent group docker`)
+- `RENDER_GID` = il GID del gruppo render (§6/VAAPI: `getent group render`)
 - `MEDIA_ROOT=/mnt/media` è già impostato
 
 Il **transcoding VAAPI è già attivo** nel `docker-compose.yml` (richiede `/dev/dri` +

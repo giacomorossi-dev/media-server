@@ -471,9 +471,8 @@ docker run --rm hello-world</pre><button class="copy-btn" type="button">Copia</b
 sudo usermod -aG render,video $USER   <span class="c"># poi esci e rientra</span></pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
       <li class="step"><div class="step-row"><input type="checkbox" id="s11-2"><label class="step-label" for="s11-2">Verifica l'accelerazione</label>
         <div class="step-body"><div class="cmd"><pre>vainfo --display drm --device /dev/dri/renderD128</pre><button class="copy-btn" type="button">Copia</button></div><p>Devi vedere profili <code class="inline">VAProfileH264…</code> / <code class="inline">VAProfileHEVC…</code>.</p></div></div></li>
-      <li class="step"><div class="step-row"><input type="checkbox" id="s11-3"><label class="step-label" for="s11-3">Annota i GID di <code class="inline">render</code> e <code class="inline">docker</code></label>
-        <div class="step-body"><div class="cmd"><pre>getent group render    <span class="c"># -&gt; RENDER_GID</span>
-getent group docker    <span class="c"># -&gt; DOCKER_GID</span></pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s11-3"><label class="step-label" for="s11-3">Annota il GID del gruppo <code class="inline">render</code></label>
+        <div class="step-body"><div class="cmd"><pre>getent group render    <span class="c"># -&gt; RENDER_GID (per il .env)</span></pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
     </ol>
   </section>
 
@@ -529,7 +528,7 @@ id -g    <span class="c"># -&gt; PGID</span></pre><button class="copy-btn" type=
             <li><code class="inline">MEDIA_ROOT=/mnt/media</code> (già impostato)</li>
             <li><code class="inline">SERVER_IP</code> = l'IP fisso prenotato del mini PC</li>
             <li><code class="inline">HOMEPAGE_ALLOWED_HOSTS</code> = quell'IP seguito da <code class="inline">:3000</code></li>
-            <li><code class="inline">RENDER_GID</code> / <code class="inline">DOCKER_GID</code> = i GID dalla Fase 11 (<code class="inline">getent group render</code> / <code class="inline">getent group docker</code>)</li>
+            <li><code class="inline">RENDER_GID</code> = il GID dalla Fase 11 (<code class="inline">getent group render</code>)</li>
           </ul>
           <p>Salva con <kbd>Ctrl+O</kbd> → <kbd>Invio</kbd> → <kbd>Ctrl+X</kbd>.</p>
         </div></div></li>

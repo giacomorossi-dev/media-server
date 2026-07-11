@@ -67,9 +67,7 @@ Regole d'oro:
    ```bash
    cp .env.example .env
    # modifica .env: SERVER_IP, HOMEPAGE_ALLOWED_HOSTS, MEDIA_ROOT
-   # ricava i GID del server e mettili in .env:
-   getent group docker    # -> DOCKER_GID
-   getent group render    # -> RENDER_GID (solo se vuoi il transcoding HW)
+   getent group render    # -> RENDER_GID (per il transcoding HW)
    ```
 
 2. **Prepara le cartelle** (il disco esterno dev'essere già montato — vedi SETUP.md)
