@@ -135,9 +135,10 @@ services:
     image: ghcr.io/gethomepage/homepage:v1.13.2
     container_name: mediaserver-homepage
     restart: unless-stopped
+    # Gira come root (niente PUID/PGID): con PUID Homepage scende a 1000 e perde il
+    # gruppo docker (group_add), quindi non legge /var/run/docker.sock (EACCES) e i
+    # widget di stato restano "unknown". Da root il socket è accessibile.
     environment:
-      PUID: ${PUID:-1000}
-      PGID: ${PGID:-1000}
       # Obbligatorio in Homepage v1.x: host da cui è ammesso l'accesso
       HOMEPAGE_ALLOWED_HOSTS: ${HOMEPAGE_ALLOWED_HOSTS}
       # Variabili usate nelle config (services.yaml / widgets.yaml)
@@ -149,10 +150,6 @@ services:
       HOMEPAGE_VAR_BAZARR_KEY: ${BAZARR_API_KEY:-}
       HOMEPAGE_VAR_QBIT_USER: ${QBIT_USER:-admin}
       HOMEPAGE_VAR_QBIT_PASS: ${QBIT_PASS:-}
-    # Accesso al socket Docker per i widget di stato container.
-    # Metti in DOCKER_GID (.env) il GID del gruppo docker:  getent group docker
-    group_add:
-      - "${DOCKER_GID:-999}"
     ports:
       - "3000:3000"
     volumes:
