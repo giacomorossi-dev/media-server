@@ -444,14 +444,16 @@ EOF</pre><button class="copy-btn" type="button">Copia</button></div></div></div>
         <div class="step-body"><div class="cmd"><pre>sudo apt update
 sudo apt install -y docker-ce docker-ce-cli containerd.io \
   docker-buildx-plugin docker-compose-plugin</pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
-      <li class="step"><div class="step-row"><input type="checkbox" id="s10-3"><label class="step-label" for="s10-3">Rotazione dei log dei container</label>
+      <li class="step"><div class="step-row"><input type="checkbox" id="s10-3"><label class="step-label" for="s10-3">Rotazione log + DNS del demone</label>
         <div class="step-body"><div class="cmd"><pre>sudo tee /etc/docker/daemon.json &gt;/dev/null &lt;&lt;'EOF'
 {
   "log-driver": "json-file",
-  "log-opts": { "max-size": "10m", "max-file": "3" }
+  "log-opts": { "max-size": "10m", "max-file": "3" },
+  "dns": ["1.1.1.1", "1.0.0.1"]
 }
 EOF
-sudo systemctl restart docker</pre><button class="copy-btn" type="button">Copia</button></div></div></div></li>
+sudo systemctl restart docker</pre><button class="copy-btn" type="button">Copia</button></div>
+          <div class="note info"><p><span class="tag">Perché il DNS qui</span></p><p>I container ereditano <code class="inline">1.1.1.1</code> per l'esterno <b>mantenendo</b> la risoluzione dei nomi-container. Risolve il caso in cui il <code class="inline">resolv.conf</code> dell'host ha un nameserver <b>IPv6 link-local</b> (che lascia i container «senza DNS esterno») e aggira il <b>blocco DNS dell'ISP</b> sui tracker.</p></div></div></div></li>
       <li class="step"><div class="step-row"><input type="checkbox" id="s10-4"><label class="step-label" for="s10-4">Docker senza sudo e verifica</label>
         <div class="step-body"><div class="cmd"><pre>sudo usermod -aG docker $USER
 <span class="c"># esci e rientra, poi:</span>
@@ -581,7 +583,7 @@ Prowlarr 9696 · Bazarr 6767 · qBittorrent 8080 · Backup 8082</pre></div>
             <li>Apri l'indexer (es. 1337x) → aggiungi lo <b>stesso Tag</b> <code class="inline">cloudflare</code> → Save → ri-Test</li>
           </ul>
           <div class="note warn"><p><span class="tag">Il tag va su ENTRAMBI</span></p><p>Il tag deve stare sul <b>proxy</b> e sull'<b>indexer</b>: se è solo sul proxy resta «inutilizzato». Byparr al primo test è lento (avvia un browser). FlareSolverr è l'alternativa più leggera ma spesso fallisce (HTTP 500) sui siti duri come 1337x.</p></div>
-          <div class="note danger"><p><span class="tag">Blocco DNS dell'ISP (Italia)</span></p><p>Se <code class="inline">getent hosts 1337x.to</code> dà <code class="inline">127.0.0.1</code> (o Byparr logga <code class="inline">NS_ERROR_CONNECTION_REFUSED</code>), il sito è <b>bloccato dal DNS dell'ISP</b> (AGCOM/Piracy Shield) — non è Cloudflare. Per questo <code class="inline">byparr</code> e <code class="inline">qbittorrent</code> nel compose usano <code class="inline">dns: 1.1.1.1</code>, che restituisce l'IP vero e aggira il blocco. Se l'ISP bloccasse anche per IP, servirebbe una VPN.</p></div></div></div></li>
+          <div class="note danger"><p><span class="tag">Blocco DNS dell'ISP (Italia)</span></p><p>Se <code class="inline">getent hosts 1337x.to</code> dà <code class="inline">127.0.0.1</code> (o Byparr logga <code class="inline">NS_ERROR_CONNECTION_REFUSED</code>), il sito è <b>bloccato dal DNS dell'ISP</b> (AGCOM/Piracy Shield) — non è Cloudflare. Per questo il <b>DNS del demone Docker</b> è su <code class="inline">1.1.1.1</code> (Fase 10, <code class="inline">daemon.json</code>): tutti i container risolvono l'IP vero e aggirano il blocco. Se l'ISP bloccasse anche per IP, servirebbe una VPN.</p></div></div></div></li>
     </ol>
 
     <h3 class="app-h">Radarr <span class="port">:7878</span> <span class="role">· film</span></h3>

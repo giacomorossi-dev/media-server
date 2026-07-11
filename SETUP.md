@@ -246,11 +246,15 @@ EOF
 sudo apt update
 sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-# rotazione log dei container (evita che riempiano il disco)
+# rotazione log + DNS del demone (i container ereditano 1.1.1.1 per l'esterno,
+# mantenendo la risoluzione dei nomi-container). Il DNS 1.1.1.1 aggira anche il
+# blocco DNS dell'ISP sui tracker ed evita il problema del resolv.conf host con
+# nameserver IPv6 link-local (che lascia i container "senza DNS esterno").
 sudo tee /etc/docker/daemon.json >/dev/null <<'EOF'
 {
   "log-driver": "json-file",
-  "log-opts": { "max-size": "10m", "max-file": "3" }
+  "log-opts": { "max-size": "10m", "max-file": "3" },
+  "dns": ["1.1.1.1", "1.0.0.1"]
 }
 EOF
 sudo systemctl restart docker
@@ -381,8 +385,9 @@ usi davvero, ogni container è superficie in più da mantenere.
 - **byparr** — già incluso nel compose: bypassa il "Cloudflare challenge" degli indexer
   pubblici in Prowlarr (Indexer Proxies → FlareSolverr → `http://mediaserver-byparr:8191`).
   In Italia però il problema più comune è il **blocco DNS dell'ISP** sui tracker: per
-  questo `byparr` e `qbittorrent` usano `dns: 1.1.1.1` (risolvono l'IP reale). Se un
-  dominio dà `127.0.0.1` con `getent hosts`, è quello il caso.
+  questo il **DNS del demone Docker** è su `1.1.1.1` (§5, `daemon.json`) — tutti i
+  container risolvono l'IP reale. Se un dominio dà `127.0.0.1` con `getent hosts`, è
+  quello il caso.
 - **Dozzle** — visore di log dei container nel browser, leggero. Opzionale, se vuoi i
   log senza SSH.
 - Da **evitare** qui: *Watchtower* (auto-update: può rompere i media server),

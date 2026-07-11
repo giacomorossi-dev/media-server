@@ -22,7 +22,7 @@ Container di supporto (senza porta web propria):
 - **byparr** — bypassa il "Cloudflare challenge" per gli indexer pubblici protetti (usato da Prowlarr via `http://mediaserver-byparr:8191`).
 - **backup-status** (`:8082`) — serve a Homepage la pagina di stato dei backup.
 
-> **Nota rete (Italia):** molti tracker sono bloccati dal DNS dell'ISP (Piracy Shield). Per questo `byparr` e `qbittorrent` usano `dns: 1.1.1.1` nel compose, così risolvono l'IP reale. Contro un blocco anche per IP servirebbe una VPN.
+> **Nota rete (Italia):** molti tracker sono bloccati dal DNS dell'ISP (Piracy Shield). Per questo il **DNS del demone Docker** è impostato su `1.1.1.1` (`/etc/docker/daemon.json`): tutti i container risolvono l'IP reale mantenendo i nomi-container. Contro un blocco anche per IP servirebbe una VPN.
 
 Accesso da un browser sulla rete di casa: `http://IP_DEL_MINIPC:PORTA`
 (la dashboard su `:3000` fa da lanciatore per tutti).

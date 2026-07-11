@@ -56,9 +56,6 @@ services:
     volumes:
       - mediaserver-qbittorrent-config:/config
       - ${MEDIA_ROOT}:/data   # root unica: qBittorrent scarica in /data/torrents
-    dns:                      # aggira il blocco DNS dell'ISP (risoluzione tracker/DHT)
-      - 1.1.1.1
-      - 1.0.0.1
     networks:
       - mediaserver-network
 
@@ -73,9 +70,6 @@ services:
       - "9696:9696"
     volumes:
       - mediaserver-prowlarr-config:/config
-    dns:
-      - 1.1.1.1
-      - 8.8.8.8
     networks:
       - mediaserver-network
 
@@ -92,9 +86,6 @@ services:
     environment:
       TZ: ${TZ:-Europe/Rome}
     shm_size: "1gb"
-    dns:                    # aggira il blocco DNS dell'ISP sui domini dei tracker
-      - 1.1.1.1
-      - 1.0.0.1
     networks:
       - mediaserver-network
 
