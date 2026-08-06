@@ -412,7 +412,55 @@ systemd, ripristino e test): vedi **[BACKUP.md](./BACKUP.md)**.
 
 ## 11. Accensione da telefono (Wake-on-LAN) e sicurezza di rete
 
-### Accendere e spegnere da telefono
+### Accendere e spegnere (Shelly + webhook) — metodo consigliato
+
+Mini PC e HDD sono alimentati tramite uno **Shelly 1PM Mini Gen3** (relè con misura di
+potenza, cablato inline sul ramo 230 V dei due alimentatori). Lo Shelly è l'unico
+dispositivo sempre acceso (~1 W); tra un uso e l'altro mini PC + HDD stanno a **0 W**.
+
+**Accensione — via corrente, non WoL:**
+1. Nel BIOS del Beelink: **Chipset → South Cluster Configuration → "Restore AC Power
+   Loss" = Power On**. Così, quando lo Shelly richiude il relè, il mini PC si avvia da
+   solo (niente WoL, niente NIC alimentata).
+2. Dal telefono chiudi il relè: app Shelly, oppure uno **Shortcut iOS/Siri** che chiama
+   l'RPC locale `http://<IP_SHELLY>/rpc/Switch.Set?id=0&on=true`.
+
+**Spegnimento gentile — webhook sul mini PC + taglio ritardato dello Shelly.**
+Il webhook fa **solo** lo shutdown pulito (`systemctl poweroff`: ferma i container e
+smonta `/mnt/media` nell'ordine giusto); la corrente la stacca lo Shelly 1-2 min dopo,
+quando il disco è già smontato → **mai taglio secco, niente corruzione**.
+
+Installazione (un colpo solo, sul mini PC):
+```bash
+git pull
+bash scripts/install-shutdown-webhook.sh
+```
+Lo script copia il servizio, **genera un token**, apre la porta ufw sulla LAN, avvia il
+servizio e stampa gli URL di test già pronti. File coinvolti: `scripts/shutdown-webhook.py`,
+`systemd/mediaserver-shutdown.{service,env.example,sudoers}`; config e token in
+`/etc/mediaserver-shutdown.env`.
+
+Test:
+```bash
+curl "http://localhost:9977/shutdown?token=<TOKEN>&dry=1"   # NON spegne: verifica webhook+token
+curl "http://localhost:9977/shutdown?token=<TOKEN>"         # spegne davvero (pulito in ~5s)
+```
+Conferma dello shutdown pulito: `sudo journalctl -b -1 | grep -iE "mnt-media|umount.target"`
+→ devono comparire `Unmounting /mnt/media`, `EXT4-fs … unmounting filesystem` e
+`Reached target umount.target` **dopo** lo stop di Docker.
+
+**Scena nell'app Shelly** ("Spegni media server"), un solo pulsante:
+1. Azione **HTTP** → `http://<IP_MINIPC>:9977/shutdown?token=<TOKEN>`
+2. **Attendi 2 minuti**
+3. **Spegni il relè**
+
+Lo stesso URL lo richiama uno **Shortcut iOS/Siri** → unico punto d'ingresso (icona sulla
+Home): "Accendi" = relè Shelly ON, "Spegni" = questa scena.
+
+> ⚠️ La porta `9977` va aperta in ufw **solo alla LAN** (lo fa lo script). Il webhook non
+> ha login: chiunque in LAN con il token può spegnere il PC — accettabile in casa.
+
+### (Alternativa) Wake-on-LAN + spegnimento SSH
 
 **Accensione — Wake-on-LAN:**
 
