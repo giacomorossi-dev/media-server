@@ -51,9 +51,13 @@ PORT="$(sudo grep -E '^LISTEN_PORT=' "$ENV_FILE" | cut -d= -f2- | tr -d '[:space
 PORT="${PORT:-9977}"
 TOKEN_NOW="$(sudo grep -E '^SHUTDOWN_TOKEN=' "$ENV_FILE" | cut -d= -f2- | tr -d '[:space:]')"
 
+# Interfaccia della LAN = quella della rotta di default (NON i bridge Docker,
+# che pure risultano "scope global" e falsavano la rilevazione).
+LAN_IF="$(ip route show default 2>/dev/null | awk '{print $5; exit}')"
+
 # --- 5) firewall (best-effort: solo se ufw attivo) --------------------------
 if command -v ufw >/dev/null 2>&1 && sudo ufw status 2>/dev/null | grep -q "Status: active"; then
-  SUBNET="$(ip -o -f inet addr show scope global | awk '{print $4}' | head -1)"
+  SUBNET="$(ip -o -f inet addr show dev "$LAN_IF" scope global 2>/dev/null | awk '{print $4}' | head -1)"
   if [ -n "${SUBNET:-}" ]; then
     sudo ufw allow from "$SUBNET" to any port "$PORT" proto tcp || true
     echo ">> ufw: aperta porta $PORT da $SUBNET"
@@ -66,7 +70,7 @@ sudo systemctl enable --now mediaserver-shutdown.service
 sudo systemctl --no-pager status mediaserver-shutdown.service || true
 
 # --- 7) stampa i comandi di test gia' pronti --------------------------------
-IP="$(ip -o -f inet addr show scope global | awk '{print $4}' | cut -d/ -f1 | head -1)"
+IP="$(ip -o -f inet addr show dev "$LAN_IF" scope global 2>/dev/null | awk '{print $4}' | cut -d/ -f1 | head -1)"
 cat <<EOF
 
 ====================================================================
