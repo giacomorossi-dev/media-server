@@ -425,10 +425,14 @@ dispositivo sempre acceso (~1 W); tra un uso e l'altro mini PC + HDD stanno a **
 2. Dal telefono chiudi il relè: app Shelly, oppure uno **Shortcut iOS/Siri** che chiama
    l'RPC locale `http://<IP_SHELLY>/rpc/Switch.Set?id=0&on=true`.
 
-**Spegnimento gentile — webhook sul mini PC + taglio ritardato dello Shelly.**
-Il webhook fa **solo** lo shutdown pulito (`systemctl poweroff`: ferma i container e
-smonta `/mnt/media` nell'ordine giusto); la corrente la stacca lo Shelly 1-2 min dopo,
-quando il disco è già smontato → **mai taglio secco, niente corruzione**.
+**Spegnimento gentile — un solo webhook sul mini PC.**
+Il webhook (1) dice allo **Shelly** via RPC locale di aprire il relè dopo ~2 min
+(`Switch.Set?id=0&on=true&toggle_after=120`), poi (2) fa lo shutdown pulito
+(`systemctl poweroff`: ferma i container e smonta `/mnt/media`). Lo Shelly taglia la
+corrente **solo dopo**, a disco smontato → **mai taglio secco, niente corruzione**.
+Mini PC e Shelly sono entrambi in LAN, quindi la chiamata funziona sempre: una
+**scena cloud** Shelly NON raggiungerebbe l'IP locale del mini PC — per questo il taglio
+lo programma il webhook, non una scena.
 
 Installazione (un colpo solo, sul mini PC):
 ```bash
@@ -449,13 +453,12 @@ Conferma dello shutdown pulito: `sudo journalctl -b -1 | grep -iE "mnt-media|umo
 → devono comparire `Unmounting /mnt/media`, `EXT4-fs … unmounting filesystem` e
 `Reached target umount.target` **dopo** lo stop di Docker.
 
-**Scena nell'app Shelly** ("Spegni media server"), un solo pulsante:
-1. Azione **HTTP** → `http://<IP_MINIPC>:9977/shutdown?token=<TOKEN>`
-2. **Attendi 2 minuti**
-3. **Spegni il relè**
-
-Lo stesso URL lo richiama uno **Shortcut iOS/Siri** → unico punto d'ingresso (icona sulla
-Home): "Accendi" = relè Shelly ON, "Spegni" = questa scena.
+**Nessuna scena Shelly da creare.** Il taglio corrente lo programma il webhook: basta
+impostare `SHELLY_IP` (IP fisso dello Shelly) in `/etc/mediaserver-shutdown.env` e
+riavviare il servizio. Lo spegnimento è un solo URL —
+`http://<IP_MINIPC>:9977/shutdown?token=<TOKEN>` — richiamato da uno **Shortcut iOS/Siri**
+o da un tap. Unico punto d'ingresso (icona Home): "Accendi" = relè Shelly ON via
+`http://<IP_SHELLY>/rpc/Switch.Set?id=0&on=true`, "Spegni" = questo URL del webhook.
 
 > ⚠️ La porta `9977` va aperta in ufw **solo alla LAN** (lo fa lo script). Il webhook non
 > ha login: chiunque in LAN con il token può spegnere il PC — accettabile in casa.
