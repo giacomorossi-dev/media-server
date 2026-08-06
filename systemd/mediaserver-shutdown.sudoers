@@ -1,0 +1,4 @@
+# Permette all'utente del webhook di spegnere il sistema senza password.
+# Installa in /etc/sudoers.d/mediaserver-shutdown  (permessi 0440).
+# Adatta l'utente se sul mini PC non e' 'giacomo'.
+giacomo ALL=(root) NOPASSWD: /usr/bin/systemctl poweroff

@@ -1,0 +1,16 @@
+[Unit]
+Description=Media Server - webhook di spegnimento gentile (chiamato da Shelly/Shortcut)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Utente non privilegiato del mini PC (adatta se non e' 'giacomo').
+User=giacomo
+EnvironmentFile=/etc/mediaserver-shutdown.env
+ExecStart=/usr/bin/python3 /usr/local/bin/mediaserver-shutdown-webhook
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
